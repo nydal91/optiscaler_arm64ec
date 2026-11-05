@@ -13,6 +13,14 @@
       <Configuration>Release</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="ReleaseDebug|ARM64EC">
+      <Configuration>ReleaseDebug</Configuration>
+      <Platform>ARM64EC</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|ARM64EC">
+      <Configuration>Release</Configuration>
+      <Platform>ARM64EC</Platform>
+    </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -43,6 +51,20 @@
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64EC'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDebug|ARM64EC'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
@@ -55,6 +77,12 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDebug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64EC'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDebug|ARM64EC'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
@@ -71,6 +99,20 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDebug|x64'">
     <IncludePath>$(ProjectDir);$(ProjectDir)include\;$(SolutionDir)external\vulkan\include;$(SolutionDir)external\nvngx_dlss_sdk;$(SolutionDir)external\xess\inc\xess;$(SolutionDir)external\xess\inc\xell;$(SolutionDir)external\xess\inc\xess_fg;$(SolutionDir)external\FidelityFX-SDK\ffx-api\include\ffx_api;$(SolutionDir)external\simpleini;$(SolutionDir)external\unordered_dense\include;$(SolutionDir)external\spdlog\include;$(SolutionDir)external\freetype;$(SolutionDir)external\streamline;$(SolutionDir)external\streamline1;$(SolutionDir)external\nvapi;$(SolutionDir)external\nlohmann;$(SolutionDir)external\fakenvapi;$(SolutionDir)external\magic_enum\include\magic_enum;$(SolutionDir)external\AntiLag2-SDK;$(SolutionDir)external\latencyflex;$(IncludePath)</IncludePath>
     <LibraryPath>$(ProjectDir)library\fsr2;$(ProjectDir)library\fsr2_212;$(ProjectDir)library\fsr31;$(ProjectDir)library\vulkan;$(ProjectDir)library\d3dx;$(ProjectDir)library\detours;$(SolutionDir)external\xess\lib;$(SolutionDir)external\freetype;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64EC'">
+    <IncludePath>$(SolutionDir)arm64ec\libs\detours\include;$(ProjectDir);$(ProjectDir)include\;$(SolutionDir)external\vulkan\include;$(SolutionDir)external\nvngx_dlss_sdk;$(SolutionDir)external\xess\inc\xess;$(SolutionDir)external\xess\inc\xell;$(SolutionDir)external\xess\inc\xess_fg;$(SolutionDir)external\FidelityFX-SDK\ffx-api\include\ffx_api;$(SolutionDir)external\simpleini;$(SolutionDir)external\unordered_dense\include;$(SolutionDir)external\spdlog\include;$(SolutionDir)external\freetype;$(SolutionDir)external\streamline;$(SolutionDir)external\streamline1;$(SolutionDir)external\nvapi;$(SolutionDir)external\nlohmann;$(SolutionDir)external\fakenvapi;$(SolutionDir)external\magic_enum\include\magic_enum;$(SolutionDir)external\AntiLag2-SDK;$(SolutionDir)external\latencyflex;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)arm64ec\libs\fsr2;$(SolutionDir)arm64ec\libs\fsr2_212;$(SolutionDir)arm64ec\libs\fsr31;$(SolutionDir)arm64ec\libs\vulkan;$(SolutionDir)arm64ec\libs\d3dx;$(SolutionDir)arm64ec\libs\detours;$(SolutionDir)arm64ec\libs\freetype;$(LibraryPath)</LibraryPath>
+    <IntDir>.\arm64ec\Release\</IntDir>
+    <OutDir>$(SolutionDir)arm64ec\Release\</OutDir>
+    <TargetExt>.dll</TargetExt>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDebug|ARM64EC'">
+    <IncludePath>$(SolutionDir)arm64ec\libs\detours\include;$(ProjectDir);$(ProjectDir)include\;$(SolutionDir)external\vulkan\include;$(SolutionDir)external\nvngx_dlss_sdk;$(SolutionDir)external\xess\inc\xess;$(SolutionDir)external\xess\inc\xell;$(SolutionDir)external\xess\inc\xess_fg;$(SolutionDir)external\FidelityFX-SDK\ffx-api\include\ffx_api;$(SolutionDir)external\simpleini;$(SolutionDir)external\unordered_dense\include;$(SolutionDir)external\spdlog\include;$(SolutionDir)external\freetype;$(SolutionDir)external\streamline;$(SolutionDir)external\streamline1;$(SolutionDir)external\nvapi;$(SolutionDir)external\nlohmann;$(SolutionDir)external\fakenvapi;$(SolutionDir)external\magic_enum\include\magic_enum;$(SolutionDir)external\AntiLag2-SDK;$(SolutionDir)external\latencyflex;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)arm64ec\libs\fsr2;$(SolutionDir)arm64ec\libs\fsr2_212;$(SolutionDir)arm64ec\libs\fsr31;$(SolutionDir)arm64ec\libs\vulkan;$(SolutionDir)arm64ec\libs\d3dx;$(SolutionDir)arm64ec\libs\detours;$(SolutionDir)arm64ec\libs\freetype;$(LibraryPath)</LibraryPath>
+    <IntDir>.\arm64ec\ReleaseDebug\</IntDir>
+    <OutDir>$(SolutionDir)arm64ec\ReleaseDebug\</OutDir>
+    <TargetExt>.dll</TargetExt>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -186,6 +228,68 @@ copy NUL "$(SolutionDir)x64\Release\a\!! EXTRACT ALL FILES TO GAME FOLDER !!" /Y
     </Link>
     <PostBuildEvent>
       <Command>powershell -Command "$timestamp = Get-Date -Format 'yyyyMMdd_HHmmss'; $fileName = '$(OutDir)OptiScaler_' + $timestamp + '.7z'; $backupFileName = '$(OutDir)OptiScaler_' + $timestamp + '_Backup.7z'; &amp; '7z.exe' a -t7z $fileName '$(TargetPath)'; &amp; '7z.exe' a -t7z $backupFileName '$(OutDir)$(TargetName).*'"</Command>
+    </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>powershell -NoProfile -ExecutionPolicy Bypass -Command "$ErrorActionPreference='Stop'; $date = Get-Date -Format 'yyyyMMdd_HHmmss'; $commit = (git -C '$(SolutionDir)' rev-parse --short HEAD 2&gt;$null); if (-not $commit) { $commit = 'unknown' }; function Write-Retry([string]$path, [string]$value) { for ($i = 0; $i -lt 30; $i++) { try { [System.IO.File]::WriteAllText($path, $value + [Environment]::NewLine, [System.Text.Encoding]::ASCII); return } catch [System.IO.IOException] { if ($i -eq 29) { throw }; Start-Sleep -Milliseconds 100 } } }; Write-Retry '$(ProjectDir)resource_build_date.h' ('#define VER_BUILD_DATE \"' + $date + '\"'); Write-Retry '$(ProjectDir)resource_build_commit.h' ('#define VER_BUILD_COMMIT \"' + $commit + '\"');"</Command>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64EC'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR;_WINDOWS;_USRDLL;IMGUI_DISABLE_SSE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <AdditionalOptions>/w34996 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+      <AdditionalDependencies>winhttp.lib;WindowsApp.lib;Dbghelp.lib;dxgi.lib;d3d11.lib;d3d12.lib;vulkan-1.lib;dxguid.lib;freetype.lib;ffx_fsr2_api_arm64ec.lib;ffx_fsr2_api_dx11_arm64ec.lib;ffx_fsr2_api_dx12_arm64ec.lib;ffx_fsr2_api_vk_arm64ec.lib;ffx_fsr2_212_api_dx12_arm64ec.lib;ffx_fsr2_212_api_vk_arm64ec.lib;ffx_fsr2_212_api_arm64ec.lib;d3dcompiler.lib;d3dx11.lib;ffx_backend_dx11_arm64ec.lib;ffx_fsr3_arm64ec.lib;ffx_fsr3upscaler_arm64ec.lib;ffx_opticalflow_arm64ec.lib;ffx_frameinterpolation_arm64ec.lib;detours.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ModuleDefinitionFile>Source.def</ModuleDefinitionFile>
+      <DelayLoadDLLs>vulkan-1.dll;dxgi.dll;d3d12.dll;D3DCOMPILER_47.dll</DelayLoadDLLs>
+      <AdditionalOptions>/ignore:4099</AdditionalOptions>
+    </Link>
+    <PostBuildEvent>
+      <Command>powershell -NoProfile -ExecutionPolicy Bypass -Command "$ErrorActionPreference='Stop'; $dst='$(SolutionDir)arm64ec\Release\a'; New-Item -ItemType Directory -Force -Path $dst | Out-Null; New-Item -ItemType Directory -Force -Path (Join-Path $dst 'Licenses') | Out-Null; New-Item -ItemType Directory -Force -Path (Join-Path $dst 'OptiScaler') | Out-Null; New-Item -ItemType Directory -Force -Path (Join-Path $dst 'OptiScaler\D3D12_OptiScaler') | Out-Null; Copy-Item '$(TargetPath)' (Join-Path $dst 'OptiScaler.dll') -Force; Copy-Item '$(SolutionDir)OptiScaler.ini' $dst -Force; Copy-Item '$(SolutionDir)setup_windows.bat' $dst -Force; Copy-Item '$(SolutionDir)external\xess\bin\*.dll' (Join-Path $dst 'OptiScaler') -Force -ErrorAction SilentlyContinue; Copy-Item '$(SolutionDir)external\FidelityFX-SDK-v2\Kits\FidelityFX\signedbin\amd_fidelityfx_*.dll' (Join-Path $dst 'OptiScaler') -Force -ErrorAction SilentlyContinue; Copy-Item '$(SolutionDir)external\directx_agility_sdk\lib\*.dll' (Join-Path $dst 'OptiScaler\D3D12_OptiScaler') -Force -ErrorAction SilentlyContinue; Copy-Item '$(SolutionDir)external\xess\LICENSE.txt' (Join-Path $dst 'Licenses\XeSS_LICENSE.txt') -Force -ErrorAction SilentlyContinue; Copy-Item '$(SolutionDir)external\FidelityFX-SDK\docs\license.md' (Join-Path $dst 'Licenses\FidelityFX_v1_LICENSE.md') -Force -ErrorAction SilentlyContinue; Copy-Item '$(SolutionDir)external\FidelityFX-SDK-v2\docs\license.md' (Join-Path $dst 'Licenses\FidelityFX_v2_LICENSE.md') -Force -ErrorAction SilentlyContinue; Copy-Item '$(SolutionDir)external\directx_agility_sdk\LICENSE.txt' (Join-Path $dst 'Licenses\DirectX_LICENSE.txt') -Force -ErrorAction SilentlyContinue; Copy-Item '$(SolutionDir)LICENSE' (Join-Path $dst 'Licenses\OptiScaler-GPL-3.0.txt') -Force -ErrorAction SilentlyContinue; Copy-Item '$(SolutionDir)arm64ec\README-ARM64EC.md' $dst -Force -ErrorAction SilentlyContinue; Copy-Item '$(SolutionDir)arm64ec\install_proton.sh' $dst -Force -ErrorAction SilentlyContinue; New-Item -ItemType File -Force -Path (Join-Path $dst '!! EXTRACT ALL FILES TO GAME FOLDER !!') | Out-Null"</Command>
+    </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>powershell -NoProfile -ExecutionPolicy Bypass -Command "$ErrorActionPreference='Stop'; $date = Get-Date -Format 'yyyyMMdd_HHmmss'; $commit = (git -C '$(SolutionDir)' rev-parse --short HEAD 2&gt;$null); if (-not $commit) { $commit = 'unknown' }; function Write-Retry([string]$path, [string]$value) { for ($i = 0; $i -lt 30; $i++) { try { [System.IO.File]::WriteAllText($path, $value + [Environment]::NewLine, [System.Text.Encoding]::ASCII); return } catch [System.IO.IOException] { if ($i -eq 29) { throw }; Start-Sleep -Milliseconds 100 } } }; Write-Retry '$(ProjectDir)resource_build_date.h' ('#define VER_BUILD_DATE \"' + $date + '\"'); Write-Retry '$(ProjectDir)resource_build_commit.h' ('#define VER_BUILD_COMMIT \"' + $commit + '\"');"</Command>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDebug|ARM64EC'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NODEBUG;_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR;_WINDOWS;_USRDLL;IMGUI_DISABLE_SSE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <AdditionalOptions>/w34996 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+      <AdditionalDependencies>winhttp.lib;WindowsApp.lib;Dbghelp.lib;dxgi.lib;d3d11.lib;d3d12.lib;vulkan-1.lib;dxguid.lib;freetype.lib;ffx_fsr2_api_arm64ec.lib;ffx_fsr2_api_dx11_arm64ec.lib;ffx_fsr2_api_dx12_arm64ec.lib;ffx_fsr2_api_vk_arm64ec.lib;ffx_fsr2_212_api_dx12_arm64ec.lib;ffx_fsr2_212_api_vk_arm64ec.lib;ffx_fsr2_212_api_arm64ec.lib;d3dcompiler.lib;d3dx11.lib;ffx_backend_dx11_arm64ec.lib;ffx_fsr3_arm64ec.lib;ffx_fsr3upscaler_arm64ec.lib;ffx_opticalflow_arm64ec.lib;ffx_frameinterpolation_arm64ec.lib;detours.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ModuleDefinitionFile>Source.def</ModuleDefinitionFile>
+      <DelayLoadDLLs>vulkan-1.dll;dxgi.dll;d3d12.dll;D3DCOMPILER_47.dll</DelayLoadDLLs>
+      <AdditionalOptions>/ignore:4099</AdditionalOptions>
+    </Link>
+    <PostBuildEvent>
+      <Command>powershell -NoProfile -ExecutionPolicy Bypass -Command "$ErrorActionPreference='Stop'; $dst='$(SolutionDir)arm64ec\ReleaseDebug\a'; New-Item -ItemType Directory -Force -Path $dst | Out-Null; Copy-Item '$(TargetPath)' (Join-Path $dst 'OptiScaler.dll') -Force"</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>powershell -NoProfile -ExecutionPolicy Bypass -Command "$ErrorActionPreference='Stop'; $date = Get-Date -Format 'yyyyMMdd_HHmmss'; $commit = (git -C '$(SolutionDir)' rev-parse --short HEAD 2&gt;$null); if (-not $commit) { $commit = 'unknown' }; function Write-Retry([string]$path, [string]$value) { for ($i = 0; $i -lt 30; $i++) { try { [System.IO.File]::WriteAllText($path, $value + [Environment]::NewLine, [System.Text.Encoding]::ASCII); return } catch [System.IO.IOException] { if ($i -eq 29) { throw }; Start-Sleep -Milliseconds 100 } } }; Write-Retry '$(ProjectDir)resource_build_date.h' ('#define VER_BUILD_DATE \"' + $date + '\"'); Write-Retry '$(ProjectDir)resource_build_commit.h' ('#define VER_BUILD_COMMIT \"' + $commit + '\"');"</Command>

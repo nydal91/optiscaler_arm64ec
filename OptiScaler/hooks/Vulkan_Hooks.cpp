@@ -169,11 +169,29 @@ static bool IsDxgiBackedCaller(void* returnAddress)
     if (module == nullptr || module == dllModule)
         return false;
 
-    if (module == lastModule)
-        return lastResult;
-
     auto name = Util::WhoIsTheCaller(returnAddress);
     to_lower_in_place(name);
+
+    // Wine's PE/ARM64EC thunk layer makes the immediate return address point into
+    // winevulkan.dll even when the call actually originates from DXVK or
+    // vkd3d-proton. Fall back to the captured D3D device state so those swapchains
+    // are still treated as DXGI backed. Doing Vulkan-only work (like the re-entrant
+    // vkGetPhysicalDeviceSurfaceCapabilitiesKHR call in hkvkCreateSwapchainKHR) on
+    // them can deadlock inside Wine. Don't cache this case because the D3D state
+    // changes during startup.
+    if (name == "winevulkan.dll")
+    {
+        auto& state = State::Instance();
+        const bool dxgiBacked = state.currentD3D11Device != nullptr || state.currentD3D12Device != nullptr ||
+                                state.currentCommandQueue != nullptr;
+
+        LOG_DEBUG("Swapchain caller: {} (wine thunk), DXGI backed: {}", name, dxgiBacked);
+
+        return dxgiBacked;
+    }
+
+    if (module == lastModule)
+        return lastResult;
 
     lastModule = module;
     lastResult = name == "dxgi.dll" || name == "d3d11.dll" || name == "d3d10core.dll" || name == "d3d12.dll" ||

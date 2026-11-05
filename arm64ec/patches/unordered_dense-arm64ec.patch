@@ -1,0 +1,13 @@
+diff --git a/include/ankerl/unordered_dense.h b/include/ankerl/unordered_dense.h
+index 13484a9..88f6ad1 100644
+--- a/include/ankerl/unordered_dense.h
++++ b/include/ankerl/unordered_dense.h
+@@ -108,7 +108,7 @@
+ #        endif
+ #    endif
+ 
+-#    if defined(_MSC_VER) && defined(_M_X64)
++#    if defined(_MSC_VER) && defined(_M_X64) && !defined(_ARM64EC_)
+ #        include <intrin.h>
+ #        pragma intrinsic(_umul128)
+ #    endif
