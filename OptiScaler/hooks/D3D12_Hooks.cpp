@@ -54,6 +54,7 @@ using PFN_Release = rewrite_signature<decltype(&IUnknown::Release)>::type;
 
 static PFN_CreateSampler o_CreateSampler = nullptr;
 static PFN_CheckFeatureSupport o_CheckFeatureSupport = nullptr;
+static thread_local bool _hideMinPrecision16 = false;
 static PFN_CreateCommittedResource o_CreateCommittedResource = nullptr;
 static PFN_CreatePlacedResource o_CreatePlacedResource = nullptr;
 static PFN_SetResidencyPriority o_SetResidencyPriority = nullptr;
@@ -1208,6 +1209,8 @@ static void RestoreBindings(ID3D12GraphicsCommandList* cmdList, const RootBindin
     }
 }
 
+void D3D12Hooks::SetHideMinPrecision16(bool enable) { _hideMinPrecision16 = enable; }
+
 void D3D12Hooks::SetRootSignatureTracking(bool enable) { t_upscalerActive = !enable; }
 
 bool D3D12Hooks::CanRestoreRootSignature(ID3D12GraphicsCommandList* cmdList)
@@ -1848,6 +1851,21 @@ static HRESULT hkCheckFeatureSupport(ID3D12Device* device, D3D12_FEATURE Feature
 {
     auto result = o_CheckFeatureSupport(device, Feature, pFeatureSupportData, FeatureSupportDataSize);
 
+    if (_hideMinPrecision16 && SUCCEEDED(result) && Feature == D3D12_FEATURE_D3D12_OPTIONS &&
+        IdentifyGpu::getPrimaryGpu().d3d12IsVkd3dProton)
+    {
+        D3D12_FEATURE_DATA_D3D12_OPTIONS4 options4 {};
+
+        if (SUCCEEDED(o_CheckFeatureSupport(device, D3D12_FEATURE_D3D12_OPTIONS4, &options4, sizeof(options4))) &&
+            !options4.Native16BitShaderOpsSupported)
+        {
+            auto options = (D3D12_FEATURE_DATA_D3D12_OPTIONS*) pFeatureSupportData;
+            options->MinPrecisionSupport = (D3D12_SHADER_MIN_PRECISION_SUPPORT) (options->MinPrecisionSupport &
+                                                                                 ~D3D12_SHADER_MIN_PRECISION_SUPPORT_16_BIT);
+            LOG_DEBUG("Hiding 16-bit min precision, native 16-bit ops are not supported");
+        }
+    }
+
     if (Config::Instance()->UESpoofIntelAtomics64.value_or_default() && Feature == D3D12_FEATURE_D3D12_OPTIONS9 &&
         device == State::Instance().currentD3D12Device)
     {
@@ -2340,6 +2358,10 @@ static HRESULT hkD3D12GetInterface(REFCLSID rclsid, REFIID riid, void** ppvDebug
 
 static void HookToDevice(ID3D12Device* InDevice)
 {
+    // The game can create devices from two threads at once, the second transaction would then fail
+    static std::recursive_mutex hookDeviceMutex;
+    std::scoped_lock lock(hookDeviceMutex);
+
     if (o_CreateSampler != nullptr || InDevice == nullptr)
         return;
 
@@ -2398,12 +2420,12 @@ static void HookToDevice(ID3D12Device* InDevice)
         if (o_SetResidencyPriority != nullptr)
             DetourAttach(&(PVOID&) o_SetResidencyPriority, hkSetResidencyPriority);
 
+        if (o_CheckFeatureSupport != nullptr)
+            DetourAttach(&(PVOID&) o_CheckFeatureSupport, hkCheckFeatureSupport);
+
         if (Config::Instance()->UESpoofIntelAtomics64.value_or_default())
         {
             LOG_DEBUG("UE spoofing for Intel Atomics64 enabled, applying detours");
-
-            if (o_CheckFeatureSupport != nullptr)
-                DetourAttach(&(PVOID&) o_CheckFeatureSupport, hkCheckFeatureSupport);
 
             if (o_CreateCommittedResource != nullptr)
                 DetourAttach(&(PVOID&) o_CreateCommittedResource, hkCreateCommittedResource);

@@ -2,6 +2,7 @@
 #include <Config.h>
 #include "FSR2Feature_Dx12.h"
 #include "MathUtils.h"
+#include <hooks/D3D12_Hooks.h>
 
 using namespace OptiMath;
 
@@ -460,6 +461,7 @@ bool FSR2FeatureDx12::InitFSR2(const NVSDK_NGX_Parameter* InParameters)
         LOG_DEBUG("ffxFsr2ContextCreate!");
 
         ScopedSkipHeapCapture skipHeapCapture {};
+        ScopedHideMinPrecision16 hideMinPrecision16 {};
         auto ret = ffxFsr2ContextCreate(&_context, &_contextDesc);
 
         if (ret != FFX_OK)
