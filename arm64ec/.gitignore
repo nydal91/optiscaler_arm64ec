@@ -1,5 +1,9 @@
 # Build artifacts (large) — the scripts and docs stay tracked.
-/libs/
 /Release/
 /ReleaseDebug/
+/zip/
 /*.zip
+
+# Prebuilt dependency libraries are tracked so CI can link without rebuilding
+# them (the root .gitignore excludes *.lib).
+!/libs/**

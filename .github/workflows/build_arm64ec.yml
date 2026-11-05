@@ -1,0 +1,82 @@
+name: Build ARM64EC
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "master" ]
+    tags: [ "arm64ec-*" ]
+    paths-ignore: [ "**.md" ]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    # The project uses the v143 toolset, which needs Visual Studio 2022.
+    runs-on: windows-2022
+
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        submodules: 'true'
+
+    - name: Patch submodules
+      shell: powershell
+      run: git -C external/unordered_dense apply --ignore-whitespace ../../arm64ec/patches/unordered_dense-arm64ec.patch
+
+    - name: Build
+      shell: powershell
+      run: powershell -NoProfile -ExecutionPolicy Bypass -File arm64ec\build-optiscaler.ps1 -SkipDeps -MaxCpu 4 -BuildRoot "$env:RUNNER_TEMP\opti-build"
+
+    - name: Package
+      shell: powershell
+      run: |
+        $ErrorActionPreference = 'Stop'
+        $source = 'arm64ec\Release\a'
+
+        # The post-build step ignores copy failures, so check the output here.
+        $required = 'OptiScaler.dll', 'OptiScaler.ini', 'install_proton.sh', 'README-ARM64EC.md',
+                    'OptiScaler\libxess.dll', 'OptiScaler\amd_fidelityfx_upscaler_dx12.dll',
+                    'OptiScaler\D3D12_OptiScaler\D3D12Core.dll', 'Licenses\OptiScaler-GPL-3.0.txt'
+        foreach ($file in $required) {
+            if (-not (Test-Path -LiteralPath (Join-Path $source $file))) { throw "Missing from package: $file" }
+        }
+
+        New-Item -ItemType Directory -Path package | Out-Null
+        Copy-Item $source package\OptiScaler_arm64ec -Recurse
+        $proxies = 'package\OptiScaler_arm64ec\proxy-names'
+        New-Item -ItemType Directory -Path $proxies | Out-Null
+        foreach ($name in 'dxgi.dll', 'winmm.dll') {
+            Copy-Item (Join-Path $source 'OptiScaler.dll') (Join-Path $proxies $name)
+        }
+
+        Push-Location package
+        7z a -tzip ..\OptiScaler_arm64ec.zip OptiScaler_arm64ec
+        if ($LASTEXITCODE -ne 0) { throw '7z failed on the full package' }
+        7z a -tzip ..\OptiScaler_arm64ec-core.zip OptiScaler_arm64ec '-x!OptiScaler_arm64ec\OptiScaler'
+        if ($LASTEXITCODE -ne 0) { throw '7z failed on the core package' }
+        Pop-Location
+
+    - uses: actions/upload-artifact@v7.0.0
+      with:
+        path: OptiScaler_arm64ec.zip
+        compression-level: 0
+        archive: false
+        if-no-files-found: error
+
+    - uses: actions/upload-artifact@v7.0.0
+      with:
+        path: OptiScaler_arm64ec-core.zip
+        compression-level: 0
+        archive: false
+        if-no-files-found: error
+
+    - name: Publish release
+      if: startsWith(github.ref, 'refs/tags/')
+      shell: powershell
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: >-
+        gh release create $env:GITHUB_REF_NAME OptiScaler_arm64ec.zip OptiScaler_arm64ec-core.zip
+        --verify-tag --title "OptiScaler ARM64EC ($env:GITHUB_REF_NAME)"
+        --notes "Unofficial ARM64EC build. See README-ARM64EC.md in the zip for installation."

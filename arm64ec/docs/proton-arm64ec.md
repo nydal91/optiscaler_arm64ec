@@ -84,3 +84,7 @@ Then build on Windows with Visual Studio 2022 and the ARM64EC tools:
 ```
 powershell -NoProfile -ExecutionPolicy Bypass -File arm64ec\build-optiscaler.ps1
 ```
+
+`arm64ec/libs` holds prebuilt dependency libraries, so add `-SkipDeps` to reuse
+them. The `Build ARM64EC` GitHub Actions workflow does this on every push to
+`master`. Pushing an `arm64ec-*` tag also publishes a release.
