@@ -1,6 +1,8 @@
 #pragma once
 #include <upscalers/IFeature_Dx11.h>
 
+#include "SGSR2Constants.h"
+
 #include <wrl/client.h>
 
 // Snapdragon Game Super Resolution 2, 2-pass compute variant
@@ -8,26 +10,6 @@ class SGSR2FeatureDx11 : public IFeature_Dx11
 {
   private:
     template <typename T> using ComPtr = Microsoft::WRL::ComPtr<T>;
-
-    // Must match the Params cbuffer in sgsr2_common.hlsli
-    struct Constants
-    {
-        uint32_t renderSize[2];
-        uint32_t displaySize[2];
-        float renderSizeRcp[2];
-        float displaySizeRcp[2];
-        float jitterOffset[2];
-        float motionUvScale[2];
-        float motionTexelScale[2];
-        float jitterCancel[2];
-        float depthSizeRcp[2];
-        float preExposure;
-        float cameraFovAngleHor;
-        float minLerpContribution;
-        uint32_t sameCamera;
-        uint32_t reset;
-        uint32_t depthInverted;
-    };
 
     struct RenderTexture
     {
@@ -53,8 +35,7 @@ class SGSR2FeatureDx11 : public IFeature_Dx11
     uint32_t _bufferDisplayHeight = 0;
     uint32_t _historyIndex = 0;
 
-    float _prevJitter[2] = {};
-    float _prevPreExposure = 0.0f;
+    SGSR2ConstantBuilder _constantBuilder;
 
     bool CreateRenderTexture(uint32_t width, uint32_t height, DXGI_FORMAT format, RenderTexture& out);
     bool EnsureBuffers(uint32_t renderWidth, uint32_t renderHeight, uint32_t displayWidth, uint32_t displayHeight,

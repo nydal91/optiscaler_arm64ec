@@ -160,7 +160,7 @@ std::string UpscalerToCode(Upscaler upscaler)
         return "dlssd";
     case Upscaler::FSR31: // DX11 only
         return "fsr31";
-    case Upscaler::SGSR2: // DX11 only
+    case Upscaler::SGSR2:
         return "sgsr2";
     default: // Upscaler::Reset and unknown
         return "";

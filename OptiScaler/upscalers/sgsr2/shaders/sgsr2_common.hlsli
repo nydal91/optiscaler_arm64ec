@@ -9,7 +9,7 @@
 // - Inverted depth is normalized on read instead of swapping min and max through the depth logic.
 // - Y is handled as upstream's REQUEST_NDC_Y_UP, which matches D3D texture coordinates.
 
-// Must match SGSR2FeatureDx11::Constants
+// Must match SGSR2Constants
 cbuffer Params : register(b0)
 {
     uint2 renderSize;

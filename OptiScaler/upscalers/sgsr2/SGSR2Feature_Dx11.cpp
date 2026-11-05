@@ -1,23 +1,12 @@
 #include <pch.h>
 #include <Config.h>
 #include <Util.h>
-#include "MathUtils.h"
 #include "SGSR2Feature_Dx11.h"
 
 #include <shaders/Shader_Dx11.h>
 
 #include "generated/sgsr2_convert_cso.h"
 #include "generated/sgsr2_upscale_cso.h"
-
-using namespace OptiMath;
-
-namespace
-{
-constexpr uint32_t ThreadGroupSize = 8;
-
-// Per-pixel motion cancels this anywhere that moves, so it only applies to static pixels
-constexpr float MinLerpContribution = 0.3f;
-} // namespace
 
 SGSR2FeatureDx11::SGSR2FeatureDx11(unsigned int InHandleId, NVSDK_NGX_Parameter* InParameters)
     : IFeature(InHandleId, InParameters), IFeature_Dx11(InHandleId, InParameters)
@@ -66,7 +55,7 @@ bool SGSR2FeatureDx11::InitInternal(ID3D11DeviceContext* InContext, NVSDK_NGX_Pa
     }
 
     D3D11_BUFFER_DESC bufferDesc {};
-    bufferDesc.ByteWidth = (sizeof(Constants) + 15) & ~15u;
+    bufferDesc.ByteWidth = (sizeof(SGSR2Constants) + 15) & ~15u;
     bufferDesc.Usage = D3D11_USAGE_DYNAMIC;
     bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
     bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
@@ -202,8 +191,6 @@ bool SGSR2FeatureDx11::EvaluateInternal(ID3D11DeviceContext* InContext, NVSDK_NG
     if (!IsInited())
         return false;
 
-    auto& cfg = *Config::Instance();
-
     ID3D11Resource* paramColor = nullptr;
     ID3D11Resource* paramVelocity = nullptr;
     ID3D11Resource* paramDepth = nullptr;
@@ -307,86 +294,21 @@ bool SGSR2FeatureDx11::EvaluateInternal(ID3D11DeviceContext* InContext, NVSDK_NG
     InParameters->Get(NVSDK_NGX_Parameter_Reset, &resetFlag);
     const bool reset = resetFlag == 1 || recreated || _frameCount == 0;
 
-    float jitterX = 0.0f;
-    float jitterY = 0.0f;
-    InParameters->Get(NVSDK_NGX_Parameter_Jitter_Offset_X, &jitterX);
-    InParameters->Get(NVSDK_NGX_Parameter_Jitter_Offset_Y, &jitterY);
+    SGSR2FrameInfo frame {};
+    frame.renderWidth = renderWidth;
+    frame.renderHeight = renderHeight;
+    frame.displayWidth = outputDesc.Width;
+    frame.displayHeight = outputDesc.Height;
+    frame.depthWidth = depthDesc.Width;
+    frame.depthHeight = depthDesc.Height;
+    frame.targetWidth = TargetWidth();
+    frame.targetHeight = TargetHeight();
+    frame.lowResMV = LowResMV();
+    frame.jitteredMV = JitteredMV();
+    frame.depthInverted = DepthInverted();
+    frame.reset = reset;
 
-    float mvScaleX = 1.0f;
-    float mvScaleY = 1.0f;
-    if (InParameters->Get(NVSDK_NGX_Parameter_MV_Scale_X, &mvScaleX) != NVSDK_NGX_Result_Success ||
-        InParameters->Get(NVSDK_NGX_Parameter_MV_Scale_Y, &mvScaleY) != NVSDK_NGX_Result_Success)
-    {
-        LOG_WARN("Can't get motion vector scales!");
-    }
-
-    float preExposure = 1.0f;
-    if (InParameters->Get(NVSDK_NGX_Parameter_DLSS_Pre_Exposure, &preExposure) != NVSDK_NGX_Result_Success ||
-        preExposure <= 0.0f)
-    {
-        preExposure = 1.0f;
-    }
-
-    float verticalFov = GetRadiansFromDeg(60.0f);
-    if (cfg.FsrVerticalFov.has_value())
-    {
-        verticalFov = GetRadiansFromDeg(cfg.FsrVerticalFov.value());
-    }
-    else if (cfg.FsrHorizontalFov.value_or_default() > 0.0f)
-    {
-        verticalFov = GetVerticalFovFromHorizontal(GetRadiansFromDeg(cfg.FsrHorizontalFov.value()),
-                                                   static_cast<float>(TargetWidth()),
-                                                   static_cast<float>(TargetHeight()));
-    }
-
-    const float renderW = static_cast<float>(renderWidth);
-    const float renderH = static_cast<float>(renderHeight);
-    const float displayW = static_cast<float>(outputDesc.Width);
-    const float displayH = static_cast<float>(outputDesc.Height);
-
-    Constants constants {};
-    constants.renderSize[0] = renderWidth;
-    constants.renderSize[1] = renderHeight;
-    constants.displaySize[0] = outputDesc.Width;
-    constants.displaySize[1] = outputDesc.Height;
-    constants.renderSizeRcp[0] = 1.0f / renderW;
-    constants.renderSizeRcp[1] = 1.0f / renderH;
-    constants.displaySizeRcp[0] = 1.0f / displayW;
-    constants.displaySizeRcp[1] = 1.0f / displayH;
-    constants.jitterOffset[0] = jitterX;
-    constants.jitterOffset[1] = jitterY;
-
-    const float motionSizeW = LowResMV() ? renderW : displayW;
-    const float motionSizeH = LowResMV() ? renderH : displayH;
-    constants.motionUvScale[0] = mvScaleX / motionSizeW;
-    constants.motionUvScale[1] = mvScaleY / motionSizeH;
-    constants.motionTexelScale[0] = motionSizeW / renderW;
-    constants.motionTexelScale[1] = motionSizeH / renderH;
-
-    if (JitteredMV() && !reset)
-    {
-        constants.jitterCancel[0] = (_prevJitter[0] - jitterX) / renderW;
-        constants.jitterCancel[1] = (_prevJitter[1] - jitterY) / renderH;
-    }
-
-    constants.depthSizeRcp[0] = 1.0f / static_cast<float>(depthDesc.Width);
-    constants.depthSizeRcp[1] = 1.0f / static_cast<float>(depthDesc.Height);
-
-    // History is tonemapped relative to the previous exposure
-    constants.preExposure =
-        _prevPreExposure > 0.0f && !reset ? std::clamp(_prevPreExposure / preExposure, 0.25f, 4.0f) : 1.0f;
-    constants.cameraFovAngleHor = std::tan(verticalFov * 0.5f) * renderW / renderH;
-    constants.minLerpContribution = MinLerpContribution;
-
-    // NGX has no camera matrices to tell if the camera moved. Always taking all 9 samples costs a little more than
-    // upstream's moving camera path, and minLerpContribution is cancelled per pixel by the motion vectors
-    constants.sameCamera = 1;
-    constants.reset = reset ? 1 : 0;
-    constants.depthInverted = DepthInverted() ? 1 : 0;
-
-    _prevJitter[0] = jitterX;
-    _prevJitter[1] = jitterY;
-    _prevPreExposure = preExposure;
+    const auto constants = _constantBuilder.Build(InParameters, frame);
 
     auto colorSrv = CreateInputSrv(colorTexture.Get());
     auto depthSrv = CreateInputSrv(depthTexture.Get());
@@ -437,8 +359,8 @@ bool SGSR2FeatureDx11::EvaluateInternal(ID3D11DeviceContext* InContext, NVSDK_NG
         InContext->CSSetShader(_convertShader.Get(), nullptr, 0);
         InContext->CSSetShaderResources(0, 3, srvs);
         InContext->CSSetUnorderedAccessViews(0, 2, uavs, nullptr);
-        InContext->Dispatch((renderWidth + ThreadGroupSize - 1) / ThreadGroupSize,
-                            (renderHeight + ThreadGroupSize - 1) / ThreadGroupSize, 1);
+        InContext->Dispatch((renderWidth + SGSR2ThreadGroupSize - 1) / SGSR2ThreadGroupSize,
+                            (renderHeight + SGSR2ThreadGroupSize - 1) / SGSR2ThreadGroupSize, 1);
         InContext->CSSetUnorderedAccessViews(0, 2, nullUavs, nullptr);
         InContext->CSSetShaderResources(0, 3, nullSrvs);
     }
@@ -453,8 +375,8 @@ bool SGSR2FeatureDx11::EvaluateInternal(ID3D11DeviceContext* InContext, NVSDK_NG
         InContext->CSSetShader(_upscaleShader.Get(), nullptr, 0);
         InContext->CSSetShaderResources(0, 3, srvs);
         InContext->CSSetUnorderedAccessViews(0, 2, uavs, nullptr);
-        InContext->Dispatch((outputDesc.Width + ThreadGroupSize - 1) / ThreadGroupSize,
-                            (outputDesc.Height + ThreadGroupSize - 1) / ThreadGroupSize, 1);
+        InContext->Dispatch((outputDesc.Width + SGSR2ThreadGroupSize - 1) / SGSR2ThreadGroupSize,
+                            (outputDesc.Height + SGSR2ThreadGroupSize - 1) / SGSR2ThreadGroupSize, 1);
         InContext->CSSetUnorderedAccessViews(0, 2, nullUavs, nullptr);
         InContext->CSSetShaderResources(0, 3, nullSrvs);
     }
