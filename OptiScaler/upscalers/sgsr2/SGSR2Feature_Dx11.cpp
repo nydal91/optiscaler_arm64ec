@@ -325,8 +325,7 @@ bool SGSR2FeatureDx11::EvaluateInternal(ID3D11DeviceContext* InContext, NVSDK_NG
     auto hr = Device->CreateUnorderedAccessView(outputTexture.Get(), &outputUavDesc, &outputUav);
     if (FAILED(hr))
     {
-        LOG_ERROR("Output format {} error: {:x}", static_cast<int>(outputDesc.Format),
-                  static_cast<unsigned long>(hr));
+        LOG_ERROR("Output format {} error: {:x}", static_cast<int>(outputDesc.Format), static_cast<unsigned long>(hr));
         return false;
     }
 

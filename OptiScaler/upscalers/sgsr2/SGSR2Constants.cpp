@@ -43,9 +43,9 @@ SGSR2Constants SGSR2ConstantBuilder::Build(NVSDK_NGX_Parameter* InParameters, co
     }
     else if (cfg.FsrHorizontalFov.value_or_default() > 0.0f)
     {
-        verticalFov = GetVerticalFovFromHorizontal(GetRadiansFromDeg(cfg.FsrHorizontalFov.value()),
-                                                   static_cast<float>(frame.targetWidth),
-                                                   static_cast<float>(frame.targetHeight));
+        verticalFov =
+            GetVerticalFovFromHorizontal(GetRadiansFromDeg(cfg.FsrHorizontalFov.value()),
+                                         static_cast<float>(frame.targetWidth), static_cast<float>(frame.targetHeight));
     }
 
     const float renderW = static_cast<float>(frame.renderWidth);

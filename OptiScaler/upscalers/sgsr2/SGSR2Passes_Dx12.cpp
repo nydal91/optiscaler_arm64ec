@@ -57,9 +57,9 @@ SGSR2Passes_Dx12::SGSR2Passes_Dx12(std::string InName, ID3D12Device* InDevice) :
 
     for (auto& frameConstants : _frameConstants)
     {
-        const auto hr =
-            InDevice->CreateCommittedResource(&heapProps, D3D12_HEAP_FLAG_NONE, &desc,
-                                              D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&frameConstants));
+        const auto hr = InDevice->CreateCommittedResource(&heapProps, D3D12_HEAP_FLAG_NONE, &desc,
+                                                          D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,
+                                                          IID_PPV_ARGS(&frameConstants));
 
         if (FAILED(hr))
         {
@@ -159,7 +159,6 @@ bool SGSR2Passes_Dx12::Dispatch(ID3D12GraphicsCommandList* InCmdList, const Inpu
         return false;
     }
 
-
     {
         ID3D12DescriptorHeap* heaps[] = { convertHeap.GetHeapCSU() };
         InCmdList->SetDescriptorHeaps(_countof(heaps), heaps);
@@ -191,10 +190,8 @@ bool SGSR2Passes_Dx12::Dispatch(ID3D12GraphicsCommandList* InCmdList, const Inpu
 
     {
         const D3D12_RESOURCE_BARRIER toWrite[] = {
-            Transition(_motionDepthClip, ReadState, WriteState),
-            Transition(_colorLuma, ReadState, WriteState),
-            Transition(prevHistory, ReadState, WriteState),
-            CD3DX12_RESOURCE_BARRIER::UAV(inputs.output),
+            Transition(_motionDepthClip, ReadState, WriteState), Transition(_colorLuma, ReadState, WriteState),
+            Transition(prevHistory, ReadState, WriteState),      CD3DX12_RESOURCE_BARRIER::UAV(inputs.output),
             CD3DX12_RESOURCE_BARRIER::UAV(nextHistory),
         };
         InCmdList->ResourceBarrier(_countof(toWrite), toWrite);

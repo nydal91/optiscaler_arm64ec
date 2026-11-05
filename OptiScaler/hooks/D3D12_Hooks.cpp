@@ -1860,8 +1860,9 @@ static HRESULT hkCheckFeatureSupport(ID3D12Device* device, D3D12_FEATURE Feature
             !options4.Native16BitShaderOpsSupported)
         {
             auto options = (D3D12_FEATURE_DATA_D3D12_OPTIONS*) pFeatureSupportData;
-            options->MinPrecisionSupport = (D3D12_SHADER_MIN_PRECISION_SUPPORT) (options->MinPrecisionSupport &
-                                                                                 ~D3D12_SHADER_MIN_PRECISION_SUPPORT_16_BIT);
+            options->MinPrecisionSupport =
+                (D3D12_SHADER_MIN_PRECISION_SUPPORT) (options->MinPrecisionSupport &
+                                                      ~D3D12_SHADER_MIN_PRECISION_SUPPORT_16_BIT);
             LOG_DEBUG("Hiding 16-bit min precision, native 16-bit ops are not supported");
         }
     }
