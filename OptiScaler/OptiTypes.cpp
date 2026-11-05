@@ -81,6 +81,9 @@ std::string UpscalerDisplayName(Upscaler upscaler, API api)
 
     case Upscaler::DLSSD:
         return "DLSSD";
+
+    case Upscaler::SGSR2:
+        return "SGSR 2";
     }
 
     return "????";
@@ -120,6 +123,9 @@ std::string UpscalerShortName(Upscaler upscaler)
 
     case Upscaler::DLSSD:
         return "DLSSD";
+
+    case Upscaler::SGSR2:
+        return "SGSR";
     }
 
     return "????";
@@ -154,6 +160,8 @@ std::string UpscalerToCode(Upscaler upscaler)
         return "dlssd";
     case Upscaler::FSR31: // DX11 only
         return "fsr31";
+    case Upscaler::SGSR2: // DX11 only
+        return "sgsr2";
     default: // Upscaler::Reset and unknown
         return "";
     }
@@ -170,6 +178,7 @@ Upscaler CodeToUpscaler(const std::string& code)
         { "dlss", Upscaler::DLSS },         { "dlss_12", Upscaler::DLSS_on12 },
         { "dlssd", Upscaler::DLSSD },       { "fsr31", Upscaler::FSR31 },
         { "fsr31_12", Upscaler::FFX_on12 }, // for compat reasons
+        { "sgsr2", Upscaler::SGSR2 },
     };
 
     auto it = mapping.find(code);

@@ -1290,8 +1290,9 @@ void MenuCommon::RenderUpscalerCombo(const API api, Upscaler currentUpscaler, co
 void MenuCommon::AddDx11Backends(Upscaler upscaler)
 {
     RenderUpscalerCombo(API::DX11, upscaler,
-                        { Upscaler::XeSS, Upscaler::FSR22, Upscaler::FSR31, Upscaler::XeSS_on12, Upscaler::FSR21_on12,
-                          Upscaler::FSR22_on12, Upscaler::FFX_on12, Upscaler::DLSS, Upscaler::DLSS_on12 });
+                        { Upscaler::XeSS, Upscaler::FSR22, Upscaler::FSR31, Upscaler::SGSR2, Upscaler::XeSS_on12,
+                          Upscaler::FSR21_on12, Upscaler::FSR22_on12, Upscaler::FFX_on12, Upscaler::DLSS,
+                          Upscaler::DLSS_on12 });
 }
 
 void MenuCommon::AddDx12Backends(Upscaler upscaler)
@@ -7079,7 +7080,7 @@ void MenuCommon::RenderActiveImageSettings(RenderMenuContext& ctx)
         // xess or dlss version >= 2.5.1
         constexpr feature_version requiredDlssVersion = { 2, 5, 1 };
         const bool isDlss = currentBackend == Upscaler::DLSS || currentBackend == Upscaler::DLSS_on12;
-        rcasEnabled = currentBackend == Upscaler::XeSS || (isDlss && currentFeature->Version() >= requiredDlssVersion);
+        rcasEnabled = currentBackend == Upscaler::XeSS || currentBackend == Upscaler::SGSR2 || (isDlss && currentFeature->Version() >= requiredDlssVersion);
 
         // Determine current mode for the dropdown
         bool currentRcasEnabled = config->RcasEnabled.value_or(rcasEnabled);

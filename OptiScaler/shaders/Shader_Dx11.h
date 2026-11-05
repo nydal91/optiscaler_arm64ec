@@ -24,8 +24,6 @@ class Shader_Dx11
     ID3D11Texture2D* _currentInResource = nullptr;
     ID3D11Texture2D* _currentOutResource = nullptr;
 
-    static DXGI_FORMAT TranslateTypelessFormats(DXGI_FORMAT format);
-
     bool CreateBufferResourceCommon(ID3D11Device* InDevice, ID3D11Resource* InResource, ID3D11Texture2D*& OutBuffer,
                                     std::function<void(D3D11_TEXTURE2D_DESC&)> modifyDescCallback);
 
@@ -39,6 +37,8 @@ class Shader_Dx11
                        ID3D11UnorderedAccessView*& targetUav);
 
   public:
+    static DXGI_FORMAT TranslateTypelessFormats(DXGI_FORMAT format);
+
     ID3D11Texture2D* Buffer() { return _buffer; }
     bool IsInit() const { return _init; }
     bool CanRender() const { return _init && _buffer != nullptr; }

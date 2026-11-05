@@ -67,6 +67,8 @@ enum class Upscaler
     DLSS_on12, // DX12 dlss using interops
 
     DLSSD, // "dlssd", used for the DLSS-D/Ray Reconstruction upscaler+denoiser backend
+
+    SGSR2, // "sgsr2", Snapdragon Game Super Resolution 2, native DX11
     Reset
 };
 

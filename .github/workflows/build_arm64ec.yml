@@ -36,7 +36,7 @@ jobs:
 
         # The post-build step ignores copy failures, so check the output here.
         $required = 'OptiScaler.dll', 'OptiScaler.ini', 'install_proton.sh', 'README-ARM64EC.md',
-                    'OptiScaler\libxess.dll', 'OptiScaler\amd_fidelityfx_upscaler_dx12.dll',
+                    'Licenses\SGSR_LICENSE.txt', 'OptiScaler\libxess.dll', 'OptiScaler\amd_fidelityfx_upscaler_dx12.dll',
                     'OptiScaler\D3D12_OptiScaler\D3D12Core.dll', 'Licenses\OptiScaler-GPL-3.0.txt'
         foreach ($file in $required) {
             if (-not (Test-Path -LiteralPath (Join-Path $source $file))) { throw "Missing from package: $file" }

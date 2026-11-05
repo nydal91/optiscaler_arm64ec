@@ -258,7 +258,7 @@ copy NUL "$(SolutionDir)x64\Release\a\!! EXTRACT ALL FILES TO GAME FOLDER !!" /Y
       <AdditionalOptions>/ignore:4099</AdditionalOptions>
     </Link>
     <PostBuildEvent>
-      <Command>powershell -NoProfile -ExecutionPolicy Bypass -Command "$ErrorActionPreference='Stop'; $dst='$(SolutionDir)arm64ec\Release\a'; New-Item -ItemType Directory -Force -Path $dst | Out-Null; New-Item -ItemType Directory -Force -Path (Join-Path $dst 'Licenses') | Out-Null; New-Item -ItemType Directory -Force -Path (Join-Path $dst 'OptiScaler') | Out-Null; New-Item -ItemType Directory -Force -Path (Join-Path $dst 'OptiScaler\D3D12_OptiScaler') | Out-Null; Copy-Item '$(TargetPath)' (Join-Path $dst 'OptiScaler.dll') -Force; Copy-Item '$(SolutionDir)OptiScaler.ini' $dst -Force; Copy-Item '$(SolutionDir)setup_windows.bat' $dst -Force; Copy-Item '$(SolutionDir)external\xess\bin\*.dll' (Join-Path $dst 'OptiScaler') -Force -ErrorAction SilentlyContinue; Copy-Item '$(SolutionDir)external\FidelityFX-SDK-v2\Kits\FidelityFX\signedbin\amd_fidelityfx_*.dll' (Join-Path $dst 'OptiScaler') -Force -ErrorAction SilentlyContinue; Copy-Item '$(SolutionDir)external\directx_agility_sdk\lib\*.dll' (Join-Path $dst 'OptiScaler\D3D12_OptiScaler') -Force -ErrorAction SilentlyContinue; Copy-Item '$(SolutionDir)external\xess\LICENSE.txt' (Join-Path $dst 'Licenses\XeSS_LICENSE.txt') -Force -ErrorAction SilentlyContinue; Copy-Item '$(SolutionDir)external\FidelityFX-SDK\docs\license.md' (Join-Path $dst 'Licenses\FidelityFX_v1_LICENSE.md') -Force -ErrorAction SilentlyContinue; Copy-Item '$(SolutionDir)external\FidelityFX-SDK-v2\docs\license.md' (Join-Path $dst 'Licenses\FidelityFX_v2_LICENSE.md') -Force -ErrorAction SilentlyContinue; Copy-Item '$(SolutionDir)external\directx_agility_sdk\LICENSE.txt' (Join-Path $dst 'Licenses\DirectX_LICENSE.txt') -Force -ErrorAction SilentlyContinue; Copy-Item '$(SolutionDir)LICENSE' (Join-Path $dst 'Licenses\OptiScaler-GPL-3.0.txt') -Force -ErrorAction SilentlyContinue; Copy-Item '$(SolutionDir)arm64ec\README-ARM64EC.md' $dst -Force -ErrorAction SilentlyContinue; Copy-Item '$(SolutionDir)arm64ec\install_proton.sh' $dst -Force -ErrorAction SilentlyContinue; New-Item -ItemType File -Force -Path (Join-Path $dst '!! EXTRACT ALL FILES TO GAME FOLDER !!') | Out-Null"</Command>
+      <Command>powershell -NoProfile -ExecutionPolicy Bypass -Command "$ErrorActionPreference='Stop'; $dst='$(SolutionDir)arm64ec\Release\a'; New-Item -ItemType Directory -Force -Path $dst | Out-Null; New-Item -ItemType Directory -Force -Path (Join-Path $dst 'Licenses') | Out-Null; New-Item -ItemType Directory -Force -Path (Join-Path $dst 'OptiScaler') | Out-Null; New-Item -ItemType Directory -Force -Path (Join-Path $dst 'OptiScaler\D3D12_OptiScaler') | Out-Null; Copy-Item '$(TargetPath)' (Join-Path $dst 'OptiScaler.dll') -Force; Copy-Item '$(SolutionDir)OptiScaler.ini' $dst -Force; Copy-Item '$(SolutionDir)setup_windows.bat' $dst -Force; Copy-Item '$(SolutionDir)external\xess\bin\*.dll' (Join-Path $dst 'OptiScaler') -Force -ErrorAction SilentlyContinue; Copy-Item '$(SolutionDir)external\FidelityFX-SDK-v2\Kits\FidelityFX\signedbin\amd_fidelityfx_*.dll' (Join-Path $dst 'OptiScaler') -Force -ErrorAction SilentlyContinue; Copy-Item '$(SolutionDir)external\directx_agility_sdk\lib\*.dll' (Join-Path $dst 'OptiScaler\D3D12_OptiScaler') -Force -ErrorAction SilentlyContinue; Copy-Item '$(SolutionDir)external\xess\LICENSE.txt' (Join-Path $dst 'Licenses\XeSS_LICENSE.txt') -Force -ErrorAction SilentlyContinue; Copy-Item '$(SolutionDir)external\FidelityFX-SDK\docs\license.md' (Join-Path $dst 'Licenses\FidelityFX_v1_LICENSE.md') -Force -ErrorAction SilentlyContinue; Copy-Item '$(SolutionDir)external\FidelityFX-SDK-v2\docs\license.md' (Join-Path $dst 'Licenses\FidelityFX_v2_LICENSE.md') -Force -ErrorAction SilentlyContinue; Copy-Item '$(SolutionDir)external\directx_agility_sdk\LICENSE.txt' (Join-Path $dst 'Licenses\DirectX_LICENSE.txt') -Force -ErrorAction SilentlyContinue; Copy-Item '$(SolutionDir)LICENSE' (Join-Path $dst 'Licenses\OptiScaler-GPL-3.0.txt') -Force -ErrorAction SilentlyContinue; Copy-Item '$(ProjectDir)upscalers\sgsr2\shaders\SGSR_LICENSE.txt' (Join-Path $dst 'Licenses\SGSR_LICENSE.txt') -Force; Copy-Item '$(SolutionDir)arm64ec\README-ARM64EC.md' $dst -Force -ErrorAction SilentlyContinue; Copy-Item '$(SolutionDir)arm64ec\install_proton.sh' $dst -Force -ErrorAction SilentlyContinue; New-Item -ItemType File -Force -Path (Join-Path $dst '!! EXTRACT ALL FILES TO GAME FOLDER !!') | Out-Null"</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>powershell -NoProfile -ExecutionPolicy Bypass -Command "$ErrorActionPreference='Stop'; $date = Get-Date -Format 'yyyyMMdd_HHmmss'; $commit = (git -C '$(SolutionDir)' rev-parse --short HEAD 2&gt;$null); if (-not $commit) { $commit = 'unknown' }; function Write-Retry([string]$path, [string]$value) { for ($i = 0; $i -lt 30; $i++) { try { [System.IO.File]::WriteAllText($path, $value + [Environment]::NewLine, [System.Text.Encoding]::ASCII); return } catch [System.IO.IOException] { if ($i -eq 29) { throw }; Start-Sleep -Milliseconds 100 } } }; Write-Retry '$(ProjectDir)resource_build_date.h' ('#define VER_BUILD_DATE \"' + $date + '\"'); Write-Retry '$(ProjectDir)resource_build_commit.h' ('#define VER_BUILD_COMMIT \"' + $commit + '\"');"</Command>
@@ -573,6 +573,7 @@ copy NUL "$(SolutionDir)x64\Release\a\!! EXTRACT ALL FILES TO GAME FOLDER !!" /Y
     <ClInclude Include="upscalers\FeatureProvider_Vk.h" />
     <ClInclude Include="upscalers\ffx\FFXFeature.h" />
     <ClInclude Include="upscalers\fsr31\FSR31Feature_Dx11.h" />
+    <ClInclude Include="upscalers\sgsr2\SGSR2Feature_Dx11.h" />
     <ClInclude Include="upscalers\ffx\FFXFeature_Dx11On12.h" />
     <ClInclude Include="upscalers\ffx\FFXFeature_Dx12.h" />
     <ClInclude Include="upscalers\ffx\FFXFeature_Vk.h" />
@@ -870,6 +871,7 @@ copy NUL "$(SolutionDir)x64\Release\a\!! EXTRACT ALL FILES TO GAME FOLDER !!" /Y
     <ClCompile Include="upscalers\fsr2_212\FSR2Feature_Vk_212.cpp" />
     <ClCompile Include="upscalers\ffx\FFXFeature.cpp" />
     <ClCompile Include="upscalers\fsr31\FSR31Feature_Dx11.cpp" />
+    <ClCompile Include="upscalers\sgsr2\SGSR2Feature_Dx11.cpp" />
     <ClCompile Include="upscalers\ffx\FFXFeature_Dx11On12.cpp" />
     <ClCompile Include="upscalers\ffx\FFXFeature_Dx12.cpp" />
     <ClCompile Include="upscalers\ffx\FFXFeature_Vk.cpp" />
@@ -960,6 +962,25 @@ copy NUL "$(SolutionDir)x64\Release\a\!! EXTRACT ALL FILES TO GAME FOLDER !!" /Y
   <ItemGroup>
     <None Include="Source.def" />
   </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="upscalers\sgsr2\shaders\sgsr2_convert.hlsl">
+      <VariableName>sgsr2_convert_cso</VariableName>
+      <HeaderFileOutput>upscalers\sgsr2\generated\sgsr2_convert_cso.h</HeaderFileOutput>
+    </FxCompile>
+    <FxCompile Include="upscalers\sgsr2\shaders\sgsr2_upscale.hlsl">
+      <VariableName>sgsr2_upscale_cso</VariableName>
+      <HeaderFileOutput>upscalers\sgsr2\generated\sgsr2_upscale_cso.h</HeaderFileOutput>
+    </FxCompile>
+  </ItemGroup>
+  <ItemDefinitionGroup>
+    <FxCompile>
+      <ShaderType>Compute</ShaderType>
+      <ShaderModel>5.0</ShaderModel>
+      <EntryPointName>CSMain</EntryPointName>
+      <ObjectFileOutput></ObjectFileOutput>
+      <AdditionalOptions>/O3 %(AdditionalOptions)</AdditionalOptions>
+    </FxCompile>
+  </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
