@@ -64,6 +64,7 @@ the driver lacks:
   7 fps, so `auto` doesn't pick it there. XeSS on DX11 doesn't work: `xess` is
   Intel only, and `xess_12` needs D3D11 to D3D12 texture sharing, which fails
   with DXVK 2.3.1 and vkd3d-proton 3.0.1.
+- **Frame generation** is not known to work on Adreno in public reports.
 - The x64 vendor DLLs in `OptiScaler/` (XeSS, AMD FidelityFX, D3D12Core) load,
   but all their work runs under x64 emulation. Do not mix in pure ARM64 copies:
   an ARM64EC process cannot load pure ARM64 modules.
