@@ -5,12 +5,13 @@
 
 #include "sgsr2_common.hlsli"
 
-Texture2D<float4> PrevHistoryOutput : register(t0);
-Texture2D<float4> MotionDepthClipAlphaBuffer : register(t1);
-Texture2D<uint> YCoCgColor : register(t2);
+VK_BINDING(3) Texture2D<float4> PrevHistoryOutput : register(t0);
+VK_BINDING(4) Texture2D<float4> MotionDepthClipAlphaBuffer : register(t1);
+VK_BINDING(5) Texture2D<uint> YCoCgColor : register(t2);
 
-RWTexture2D<float4> SceneColorOutput : register(u0);
-RWTexture2D<float4> HistoryOutput : register(u1);
+// Its format comes from the game, build_vk.sh turns it into an unknown one as glslang can't declare that
+VK_BINDING(6) RWTexture2D<float4> SceneColorOutput : register(u0);
+VK_BINDING(7) VK_FORMAT(rgba16f) RWTexture2D<float4> HistoryOutput : register(u1);
 
 struct Accumulator
 {

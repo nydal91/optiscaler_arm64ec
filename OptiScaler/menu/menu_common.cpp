@@ -1305,8 +1305,8 @@ void MenuCommon::AddDx12Backends(Upscaler upscaler)
 void MenuCommon::AddVulkanBackends(Upscaler upscaler)
 {
     RenderUpscalerCombo(API::Vulkan, upscaler,
-                        { Upscaler::XeSS, Upscaler::FSR21, Upscaler::FSR22, Upscaler::FFX, Upscaler::FSR21_on12,
-                          Upscaler::FFX_on12, Upscaler::DLSS, Upscaler::DLSS_on12 });
+                        { Upscaler::XeSS, Upscaler::FSR21, Upscaler::FSR22, Upscaler::FFX, Upscaler::SGSR2,
+                          Upscaler::FSR21_on12, Upscaler::FFX_on12, Upscaler::DLSS, Upscaler::DLSS_on12 });
 }
 
 template <HasDefaultValue B> void MenuCommon::AddResourceBarrier(std::string name, CustomOptional<int32_t, B>* value)

@@ -48,7 +48,7 @@ bool IFeature_Vk::Evaluate(VkCommandBuffer InCmdBuffer, NVSDK_NGX_Parameter* InP
         _sharpness = 1.0f;
 
     auto upscaler = GetUpscalerType();
-    bool useRcas = upscaler == Upscaler::XeSS ||
+    bool useRcas = upscaler == Upscaler::XeSS || upscaler == Upscaler::SGSR2 ||
                    (upscaler == Upscaler::DLSS && Version() >= feature_version(2, 5, 1)) || upscaler == Upscaler::DLSSD;
 
     if (!useRcas)

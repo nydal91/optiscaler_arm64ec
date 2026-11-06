@@ -5,12 +5,12 @@
 
 #include "sgsr2_common.hlsli"
 
-Texture2D<float4> InputColor : register(t0);
-Texture2D<float> InputDepth : register(t1);
-Texture2D<float4> InputVelocity : register(t2);
+VK_BINDING(3) Texture2D<float4> InputColor : register(t0);
+VK_BINDING(4) Texture2D<float> InputDepth : register(t1);
+VK_BINDING(5) Texture2D<float4> InputVelocity : register(t2);
 
-RWTexture2D<float4> MotionDepthClipAlphaBuffer : register(u0);
-RWTexture2D<uint> YCoCgColor : register(u1);
+VK_BINDING(6) VK_FORMAT(rgba16f) RWTexture2D<float4> MotionDepthClipAlphaBuffer : register(u0);
+VK_BINDING(7) VK_FORMAT(r32ui) RWTexture2D<uint> YCoCgColor : register(u1);
 
 float4 GatherDepth(float2 uv)
 {

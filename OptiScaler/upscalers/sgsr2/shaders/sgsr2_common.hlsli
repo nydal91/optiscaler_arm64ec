@@ -9,8 +9,17 @@
 // - Inverted depth is normalized on read instead of swapping min and max through the depth logic.
 // - Y is handled as upstream's REQUEST_NDC_Y_UP, which matches D3D texture coordinates.
 
+// Vulkan builds define SGSR2_VK, the bindings match SGSR2Passes_Vk. Regenerate its headers with build_vk.sh
+#ifdef SGSR2_VK
+#define VK_BINDING(index) [[vk::binding(index)]]
+#define VK_FORMAT(format) [[spv::format_##format]]
+#else
+#define VK_BINDING(index)
+#define VK_FORMAT(format)
+#endif
+
 // Must match SGSR2Constants
-cbuffer Params : register(b0)
+VK_BINDING(0) cbuffer Params : register(b0)
 {
     uint2 renderSize;
     uint2 displaySize;
@@ -29,5 +38,5 @@ cbuffer Params : register(b0)
     uint depthInverted;
 };
 
-SamplerState LinearClamp : register(s0);
-SamplerState PointClamp : register(s1);
+VK_BINDING(1) SamplerState LinearClamp : register(s0);
+VK_BINDING(2) SamplerState PointClamp : register(s1);
