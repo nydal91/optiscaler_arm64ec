@@ -6,7 +6,6 @@
 
 using namespace OptiMath;
 
-
 // TEMPORARY DIAGNOSTIC (diag-vk branch only): names the Vulkan call the FSR backend fails on
 namespace
 {
@@ -28,10 +27,10 @@ DIAG_FN(vkCreateBuffer, (VkDevice d, const VkBufferCreateInfo* c, const VkAlloca
 DIAG_FN(vkCreateImage, (VkDevice d, const VkImageCreateInfo* c, const VkAllocationCallbacks* a, VkImage* o),
         (d, c, a, o),
         LOG_ERROR("DIAG image fmt {} {}x{}x{} mips {} layers {} usage {:X} flags {:X} type {}", (int) c->format,
-                  c->extent.width, c->extent.height, c->extent.depth, c->mipLevels, c->arrayLayers,
-                  (uint32_t) c->usage, (uint32_t) c->flags, (int) c->imageType))
-DIAG_FN(vkAllocateMemory, (VkDevice d, const VkMemoryAllocateInfo* c, const VkAllocationCallbacks* a, VkDeviceMemory* o),
-        (d, c, a, o),
+                  c->extent.width, c->extent.height, c->extent.depth, c->mipLevels, c->arrayLayers, (uint32_t) c->usage,
+                  (uint32_t) c->flags, (int) c->imageType))
+DIAG_FN(vkAllocateMemory,
+        (VkDevice d, const VkMemoryAllocateInfo* c, const VkAllocationCallbacks* a, VkDeviceMemory* o), (d, c, a, o),
         LOG_ERROR("DIAG alloc size {} type {} pNext {:X}", (uint64_t) c->allocationSize, c->memoryTypeIndex,
                   (size_t) c->pNext))
 DIAG_FN(vkBindBufferMemory, (VkDevice d, VkBuffer b, VkDeviceMemory m, VkDeviceSize s), (d, b, m, s), )
@@ -113,8 +112,8 @@ bool FSR2FeatureVk::InitFSR2(const NVSDK_NGX_Parameter* InParameters)
         void* scratchBuffer = calloc(scratchBufferSize, 1);
 
         o_gdpa = vkGetDeviceProcAddr;
-        auto errorCode = ffxFsr2GetInterfaceVK(&_contextDesc.callbacks, scratchBuffer, scratchBufferSize,
-                                               PhysicalDevice, DiagGdpa);
+        auto errorCode =
+            ffxFsr2GetInterfaceVK(&_contextDesc.callbacks, scratchBuffer, scratchBufferSize, PhysicalDevice, DiagGdpa);
 
         if (errorCode != FFX_OK)
         {
