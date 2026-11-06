@@ -6607,6 +6607,15 @@ VkResult Vulkan_wDx12::hk_vkBeginCommandBuffer(VkCommandBuffer commandBuffer,
     LOG_DEBUG("commandBuffer: {:X}", (size_t) commandBuffer);
 #endif
 
+    {
+        static int diagBegin = 0;
+        auto diagLvl = cmdBufferStateTracker.GetCommandBufferLevel(commandBuffer);
+        if (diagLvl.has_value() && *diagLvl != VK_COMMAND_BUFFER_LEVEL_PRIMARY && diagBegin++ < 400)
+            LOG_INFO("DIAG secondary {:X} begin flags {:X} inherit rp {:X}", (size_t) commandBuffer,
+                     pBeginInfo ? (uint32_t) pBeginInfo->flags : 0,
+                     (pBeginInfo && pBeginInfo->pInheritanceInfo) ? (size_t) pBeginInfo->pInheritanceInfo->renderPass
+                                                                  : 0);
+    }
     return o_vkBeginCommandBuffer(commandBuffer, pBeginInfo);
 }
 

@@ -15,9 +15,9 @@ PFN_vkGetDeviceProcAddr o_gdpa = nullptr;
     VKAPI_ATTR VkResult VKAPI_CALL d_##name sig                                                                        \
     {                                                                                                                  \
         auto r = o_##name args;                                                                                        \
-        if (r != VK_SUCCESS)                                                                                           \
+        LOG_INFO("DIAG " #name " = {}", (int) r);                                                                      \
         {                                                                                                              \
-            LOG_ERROR("DIAG " #name " returned {}", (int) r);                                                          \
+            (void) 0;                                                                                                  \
             extra;                                                                                                     \
         }                                                                                                              \
         return r;                                                                                                      \
@@ -61,6 +61,19 @@ DIAG_FN(vkCreateComputePipelines,
 DIAG_FN(vkAllocateDescriptorSets, (VkDevice d, const VkDescriptorSetAllocateInfo* c, VkDescriptorSet* o), (d, c, o), )
 #undef DIAG_FN
 
+PFN_vkGetBufferMemoryRequirements o_vkGetBufferMemoryRequirements = nullptr;
+VKAPI_ATTR void VKAPI_CALL d_vkGetBufferMemoryRequirements(VkDevice d, VkBuffer b, VkMemoryRequirements* m)
+{
+    o_vkGetBufferMemoryRequirements(d, b, m);
+    LOG_INFO("DIAG bufReq size {} bits {:X}", (uint64_t) m->size, m->memoryTypeBits);
+}
+PFN_vkGetImageMemoryRequirements o_vkGetImageMemoryRequirements = nullptr;
+VKAPI_ATTR void VKAPI_CALL d_vkGetImageMemoryRequirements(VkDevice d, VkImage b, VkMemoryRequirements* m)
+{
+    o_vkGetImageMemoryRequirements(d, b, m);
+    LOG_INFO("DIAG imgReq size {} bits {:X}", (uint64_t) m->size, m->memoryTypeBits);
+}
+
 PFN_vkVoidFunction VKAPI_CALL DiagGdpa(VkDevice device, const char* name)
 {
     auto real = o_gdpa(device, name);
@@ -73,6 +86,8 @@ PFN_vkVoidFunction VKAPI_CALL DiagGdpa(VkDevice device, const char* name)
         o_##n = reinterpret_cast<PFN_##n>(real);                                                                       \
         return reinterpret_cast<PFN_vkVoidFunction>(d_##n);                                                            \
     }
+    DIAG_MAP(vkGetBufferMemoryRequirements)
+    DIAG_MAP(vkGetImageMemoryRequirements)
     DIAG_MAP(vkCreateBuffer)
     DIAG_MAP(vkCreateImage)
     DIAG_MAP(vkAllocateMemory)
@@ -111,6 +126,15 @@ bool FSR2FeatureVk::InitFSR2(const NVSDK_NGX_Parameter* InParameters)
         auto scratchBufferSize = ffxFsr2GetScratchMemorySizeVK(PhysicalDevice);
         void* scratchBuffer = calloc(scratchBufferSize, 1);
 
+        {
+            VkPhysicalDeviceMemoryProperties mp {};
+            vkGetPhysicalDeviceMemoryProperties(PhysicalDevice, &mp);
+            LOG_INFO("DIAG PD {:X} memTypes {} heaps {}", (size_t) PhysicalDevice, mp.memoryTypeCount,
+                     mp.memoryHeapCount);
+            for (uint32_t i = 0; i < mp.memoryTypeCount; i++)
+                LOG_INFO("DIAG memType {} flags {:X} heap {}", i, (uint32_t) mp.memoryTypes[i].propertyFlags,
+                         mp.memoryTypes[i].heapIndex);
+        }
         o_gdpa = vkGetDeviceProcAddr;
         auto errorCode =
             ffxFsr2GetInterfaceVK(&_contextDesc.callbacks, scratchBuffer, scratchBufferSize, PhysicalDevice, DiagGdpa);
