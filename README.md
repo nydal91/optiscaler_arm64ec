@@ -26,6 +26,7 @@ This build lets x64 Windows games use OptiScaler on ARM devices. It works in **W
 - **SGSR 1 and SGSR 2** (Snapdragon Game Super Resolution), added in this build as native backends for DX11, DX12 and Vulkan. They need no vendor runtime.
 - **FSR on Adreno:** Vulkan and DX12 fixes for FSR 2 and FSR 3 in Winlator.
 - **Unity Vulkan games on Turnip:** upscaling work is moved out of the render pass, because Turnip silently drops it there and the picture comes out blank.
+- **OptiScaler overlay in Vulkan games** under Wine, where it couldn't open before because it never got the game window.
 - **XeSS on DX12 with vkd3d-proton**, usable but slow on mobile GPUs.
 
 ### Tested in Winlator
@@ -54,6 +55,8 @@ Tested on a RedMagic 8 Pro (Snapdragon 8 Gen 2, Adreno 740) with the Winlator cm
 4. Choose an upscaler in `OptiScaler.ini` with `Dx11Upscaler`, `Dx12Upscaler` or `VulkanUpscaler`.
 5. **For Vulkan games**, also set `Vulkan=true` and `VulkanExtensionSpoofing=true`.
 6. Start the game and turn on **DLSS** in its graphics settings. OptiScaler only runs when the game asks for DLSS, and some games turn the option off on every launch.
+
+Press `O` to open the OptiScaler overlay. In Winlator, use a controls profile or on-screen keyboard that has an `O` key.
 
 If OptiScaler doesn't load, add `WINEDLLOVERRIDES=dxgi=n,b` to the container's environment variables.
 

@@ -28,6 +28,8 @@ FEXCore, Turnip, DXVK 2.3.1 and vkd3d-proton 3.0.1.
    `VulkanExtensionSpoofing=true`.
 5. Start the game and turn on DLSS in its graphics settings. OptiScaler only runs
    when the game asks for DLSS.
+6. Press `O` for the overlay, using a controls profile or on-screen keyboard that
+   has an `O` key.
 
 If OptiScaler doesn't load, add `WINEDLLOVERRIDES=dxgi=n,b` to the container's
 environment variables.
