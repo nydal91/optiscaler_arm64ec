@@ -1,4 +1,5 @@
 #include <pch.h>
+#include <spoofing/Vulkan_Spoofing.h>
 #include <Config.h>
 #include "FSR2Feature_Vk_212.h"
 #include "nvsdk_ngx_vk.h"
@@ -21,6 +22,7 @@ bool FSR2FeatureVk212::InitFSR2(const NVSDK_NGX_Parameter* InParameters)
 
     {
         ScopedSkipSpoofingGlobal skipSpoofingGlobal {};
+        ScopedFfxMemoryTypes ffxMemoryTypes {};
 
         auto scratchBufferSize = Fsr212::ffxFsr2GetScratchMemorySizeVK212(PhysicalDevice);
         void* scratchBuffer = calloc(scratchBufferSize, 1);

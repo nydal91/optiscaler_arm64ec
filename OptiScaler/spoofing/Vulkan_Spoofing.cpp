@@ -177,12 +177,58 @@ static void EnableFeatureStruct(VkDeviceCreateInfo* pCreateInfo, PFN_vkGetPhysic
     (EnableSupportedFeature(pCreateInfo, modifiedFeatures, feature, members, supported.*members), ...);
 }
 
+// FidelityFX refuses host visible memory when it asks for device local memory, which leaves it with nothing on a
+// unified memory GPU like Adreno, where every usable device local type is host visible. Show it one such type as device
+// local only, as long as another type can still serve its upload buffers.
+static void HideHostAccessOnOneMemoryType(VkPhysicalDeviceMemoryProperties* memoryProperties)
+{
+    constexpr VkMemoryPropertyFlags hostFlags =
+        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT | VK_MEMORY_PROPERTY_HOST_CACHED_BIT;
+    constexpr VkMemoryPropertyFlags uploadFlags =
+        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+
+    int candidate = -1;
+
+    for (uint32_t i = 0; i < memoryProperties->memoryTypeCount; i++)
+    {
+        const auto flags = memoryProperties->memoryTypes[i].propertyFlags;
+
+        if ((flags & VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT) != 0 ||
+            (flags & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT) == 0)
+            continue;
+
+        if ((flags & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) == 0)
+            return; // A real device local type exists
+
+        candidate = static_cast<int>(i);
+    }
+
+    if (candidate < 0)
+        return;
+
+    for (uint32_t i = 0; i < memoryProperties->memoryTypeCount; i++)
+    {
+        if (static_cast<int>(i) != candidate &&
+            (memoryProperties->memoryTypes[i].propertyFlags & uploadFlags) == uploadFlags)
+        {
+            memoryProperties->memoryTypes[candidate].propertyFlags &= ~hostFlags;
+            return;
+        }
+    }
+}
+
 inline static void hkvkGetPhysicalDeviceMemoryProperties(VkPhysicalDevice physicalDevice,
                                                          VkPhysicalDeviceMemoryProperties* pMemoryProperties)
 {
     o_vkGetPhysicalDeviceMemoryProperties(physicalDevice, pMemoryProperties);
 
     if (pMemoryProperties == nullptr)
+        return;
+
+    if (ScopedFfxMemoryTypes::IsActive())
+        HideHostAccessOnOneMemoryType(pMemoryProperties);
+
+    if (!Config::Instance()->VulkanVRAM.has_value())
         return;
 
     for (size_t i = 0; i < pMemoryProperties->memoryHeapCount; i++)
@@ -1662,23 +1708,27 @@ void VulkanSpoofing::HookForVulkanExtensionSpoofing(HMODULE vulkanModule)
 
 void VulkanSpoofing::HookForVulkanVRAMSpoofing(HMODULE vulkanModule)
 {
-    if (Config::Instance()->VulkanVRAM.has_value() && o_vkGetPhysicalDeviceMemoryProperties == nullptr)
+    if (o_vkGetPhysicalDeviceMemoryProperties == nullptr)
     {
         FARPROC address = nullptr;
 
+        // Always hooked because FidelityFX needs it on unified memory GPUs, see HideHostAccessOnOneMemoryType
         address = KernelBaseProxy::GetProcAddress_()(vulkanModule, "vkGetPhysicalDeviceMemoryProperties");
         o_vkGetPhysicalDeviceMemoryProperties = (PFN_vkGetPhysicalDeviceMemoryProperties) address;
 
-        address = KernelBaseProxy::GetProcAddress_()(vulkanModule, "vkGetPhysicalDeviceMemoryProperties2");
-        o_vkGetPhysicalDeviceMemoryProperties2 = (PFN_vkGetPhysicalDeviceMemoryProperties2) address;
+        if (Config::Instance()->VulkanVRAM.has_value())
+        {
+            address = KernelBaseProxy::GetProcAddress_()(vulkanModule, "vkGetPhysicalDeviceMemoryProperties2");
+            o_vkGetPhysicalDeviceMemoryProperties2 = (PFN_vkGetPhysicalDeviceMemoryProperties2) address;
 
-        address = KernelBaseProxy::GetProcAddress_()(vulkanModule, "vkGetPhysicalDeviceMemoryProperties2KHR");
-        o_vkGetPhysicalDeviceMemoryProperties2KHR = (PFN_vkGetPhysicalDeviceMemoryProperties2KHR) address;
+            address = KernelBaseProxy::GetProcAddress_()(vulkanModule, "vkGetPhysicalDeviceMemoryProperties2KHR");
+            o_vkGetPhysicalDeviceMemoryProperties2KHR = (PFN_vkGetPhysicalDeviceMemoryProperties2KHR) address;
+        }
 
         if (o_vkGetPhysicalDeviceMemoryProperties != nullptr || o_vkGetPhysicalDeviceMemoryProperties2 != nullptr ||
             o_vkGetPhysicalDeviceMemoryProperties2KHR != nullptr)
         {
-            LOG_INFO("Attaching Vulkan VRAM spoofing hooks");
+            LOG_INFO("Attaching Vulkan memory properties hooks");
 
             DetourTransactionBegin();
             DetourUpdateThread(GetCurrentThread());
@@ -1696,7 +1746,7 @@ void VulkanSpoofing::HookForVulkanVRAMSpoofing(HMODULE vulkanModule)
             auto detourResult = DetourTransactionCommit();
             if (detourResult != NO_ERROR)
             {
-                LOG_ERROR("Failed to attach Vulkan VRAM spoofing hooks: {:X}", detourResult);
+                LOG_ERROR("Failed to attach Vulkan memory properties hooks: {:X}", detourResult);
                 o_vkGetPhysicalDeviceMemoryProperties = nullptr;
                 o_vkGetPhysicalDeviceMemoryProperties2 = nullptr;
                 o_vkGetPhysicalDeviceMemoryProperties2KHR = nullptr;
