@@ -1160,6 +1160,14 @@ PFN_vkVoidFunction hkvkGetInstanceProcAddr(VkInstance instance, const char* pNam
         LOG_DEBUG("vkCreateDevice");
         return (PFN_vkVoidFunction) hkvkCreateDevice;
     }
+    else if (procName == std::string("vkCreateWin32SurfaceKHR"))
+    {
+        // Wine resolves this past the vulkan-1 export, the menu gets no window for its input without it
+        if (o_vkCreateWin32SurfaceKHR == nullptr)
+            o_vkCreateWin32SurfaceKHR = (PFN_vkCreateWin32SurfaceKHR) orgFunc;
+
+        return (PFN_vkVoidFunction) hkvkCreateWin32SurfaceKHR;
+    }
 
     if (auto direct = StreamlineSwapchainFunction(pName, _ReturnAddress()))
         return direct;
