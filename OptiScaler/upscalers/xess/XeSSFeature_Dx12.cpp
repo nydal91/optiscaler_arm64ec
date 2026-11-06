@@ -2,6 +2,7 @@
 #include <Config.h>
 
 #include "XeSSFeature_Dx12.h"
+#include <hooks/D3D12_Hooks.h>
 
 bool XeSSFeatureDx12::InitInternal(ID3D12GraphicsCommandList* InCommandList, NVSDK_NGX_Parameter* InParameters)
 {
@@ -10,6 +11,7 @@ bool XeSSFeatureDx12::InitInternal(ID3D12GraphicsCommandList* InCommandList, NVS
     if (IsInited())
         return true;
 
+    ScopedReportShaderModel64 reportShaderModel64 {};
     return InitXeSS(Device, InParameters);
 }
 

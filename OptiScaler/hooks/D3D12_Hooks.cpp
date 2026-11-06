@@ -55,6 +55,7 @@ using PFN_Release = rewrite_signature<decltype(&IUnknown::Release)>::type;
 static PFN_CreateSampler o_CreateSampler = nullptr;
 static PFN_CheckFeatureSupport o_CheckFeatureSupport = nullptr;
 static thread_local bool _hideMinPrecision16 = false;
+static thread_local bool _reportShaderModel64 = false;
 static PFN_CreateCommittedResource o_CreateCommittedResource = nullptr;
 static PFN_CreatePlacedResource o_CreatePlacedResource = nullptr;
 static PFN_SetResidencyPriority o_SetResidencyPriority = nullptr;
@@ -1210,6 +1211,7 @@ static void RestoreBindings(ID3D12GraphicsCommandList* cmdList, const RootBindin
 }
 
 void D3D12Hooks::SetHideMinPrecision16(bool enable) { _hideMinPrecision16 = enable; }
+void D3D12Hooks::SetReportShaderModel64(bool enable) { _reportShaderModel64 = enable; }
 
 void D3D12Hooks::SetRootSignatureTracking(bool enable) { t_upscalerActive = !enable; }
 
@@ -1850,6 +1852,18 @@ static HRESULT hkCheckFeatureSupport(ID3D12Device* device, D3D12_FEATURE Feature
                                      UINT FeatureSupportDataSize)
 {
     auto result = o_CheckFeatureSupport(device, Feature, pFeatureSupportData, FeatureSupportDataSize);
+
+    if (_reportShaderModel64 && SUCCEEDED(result) && Feature == D3D12_FEATURE_SHADER_MODEL &&
+        IdentifyGpu::getPrimaryGpu().d3d12IsVkd3dProton)
+    {
+        auto shaderModel = (D3D12_FEATURE_DATA_SHADER_MODEL*) pFeatureSupportData;
+
+        if (shaderModel->HighestShaderModel < D3D_SHADER_MODEL_6_4)
+        {
+            LOG_INFO("Reporting SM 6.4 instead of {:X}", (UINT) shaderModel->HighestShaderModel);
+            shaderModel->HighestShaderModel = D3D_SHADER_MODEL_6_4;
+        }
+    }
 
     if (_hideMinPrecision16 && SUCCEEDED(result) && Feature == D3D12_FEATURE_D3D12_OPTIONS &&
         IdentifyGpu::getPrimaryGpu().d3d12IsVkd3dProton)

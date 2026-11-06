@@ -26,6 +26,17 @@ class D3D12Hooks
     // the device lacks native 16-bit ops. Hides 16-bit precision from CheckFeatureSupport on the CALLING
     // THREAD in that case, so FSR 2.x falls back to its FP32 shaders.
     static void SetHideMinPrecision16(bool enable);
+
+    // vkd3d-proton reports SM 6.0 when the device lacks native 16-bit ops, but still runs the SM 6.4 shaders of
+    // XeSS. Reports SM 6.4 to CheckFeatureSupport on the CALLING THREAD in that case.
+    static void SetReportShaderModel64(bool enable);
+};
+
+class ScopedReportShaderModel64
+{
+  public:
+    ScopedReportShaderModel64() { D3D12Hooks::SetReportShaderModel64(true); }
+    ~ScopedReportShaderModel64() { D3D12Hooks::SetReportShaderModel64(false); }
 };
 
 class ScopedHideMinPrecision16

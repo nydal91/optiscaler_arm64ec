@@ -615,7 +615,20 @@ static Upscaler GetUpscalerBackend()
         upscaler = Upscaler::FFX;
 
     if (Config::Instance()->Dx12Upscaler.has_value())
+    {
         upscaler = Config::Instance()->Dx12Upscaler.value();
+    }
+    else if (upscaler == Upscaler::XeSS && primaryGpu.d3d12IsVkd3dProton && D3D12Device != nullptr)
+    {
+        // XeSS can run below SM 6.4 on vkd3d-proton, but such GPUs are too slow for it to be the default
+        D3D12_FEATURE_DATA_SHADER_MODEL shaderModel { D3D_SHADER_MODEL_6_4 };
+
+        if (FAILED(D3D12Device->CheckFeatureSupport(D3D12_FEATURE_SHADER_MODEL, &shaderModel, sizeof(shaderModel))) ||
+            shaderModel.HighestShaderModel < D3D_SHADER_MODEL_6_4)
+        {
+            upscaler = Upscaler::FSR22;
+        }
+    }
 
     return upscaler;
 }

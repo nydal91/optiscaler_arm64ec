@@ -58,10 +58,12 @@ the driver lacks:
 
 - **FSR 2.2.1 and FSR 3.1.2** are compiled natively into the ARM64EC proxy and
   are the realistic outputs on Adreno/Mali class hardware.
-- **XeSS**, **DLSS** and **FSR4** depend on vendor runtimes/GPUs. On Adreno,
-  DLSS is generally not detected, FSR4 is unavailable, and XeSS/FSR2.1.2 may
-  fail to initialise. See the upstream compatibility lists.
-- **Frame generation** is not known to work on Adreno in public reports.
+- **DLSS** and **FSR4** depend on vendor runtimes/GPUs. On Adreno, DLSS is
+  generally not detected and FSR4 is unavailable.
+- **XeSS** runs on DX12 on Adreno 740 with `Dx12Upscaler=xess`, but at about
+  7 fps, so `auto` doesn't pick it there. XeSS on DX11 doesn't work: `xess` is
+  Intel only, and `xess_12` needs D3D11 to D3D12 texture sharing, which fails
+  with DXVK 2.3.1 and vkd3d-proton 3.0.1.
 - The x64 vendor DLLs in `OptiScaler/` (XeSS, AMD FidelityFX, D3D12Core) load,
   but all their work runs under x64 emulation. Do not mix in pure ARM64 copies:
   an ARM64EC process cannot load pure ARM64 modules.
