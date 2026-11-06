@@ -28,6 +28,21 @@ class VulkanDeviceFeatureState
     friend class VulkanSpoofing;
 };
 
+// Active while the FidelityFX Vulkan backends create their resources, on the calling thread only
+class ScopedFfxMemoryTypes
+{
+  public:
+    ScopedFfxMemoryTypes() { depth++; }
+    ~ScopedFfxMemoryTypes() { depth--; }
+    ScopedFfxMemoryTypes(const ScopedFfxMemoryTypes&) = delete;
+    ScopedFfxMemoryTypes& operator=(const ScopedFfxMemoryTypes&) = delete;
+
+    static bool IsActive() { return depth > 0; }
+
+  private:
+    inline static thread_local int depth = 0;
+};
+
 class VulkanSpoofing
 {
   private:

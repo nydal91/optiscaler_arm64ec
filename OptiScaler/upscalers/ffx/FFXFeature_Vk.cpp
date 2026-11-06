@@ -1,4 +1,5 @@
 #include <pch.h>
+#include <spoofing/Vulkan_Spoofing.h>
 #include <Config.h>
 #include <Util.h>
 #include <proxies/FfxApi_Proxy.h>
@@ -177,6 +178,7 @@ bool FFXFeatureVk::InitFFX(const NVSDK_NGX_Parameter* InParameters)
 
     {
         ScopedSkipSpoofingGlobal skipSpoofingGlobal {};
+        ScopedFfxMemoryTypes ffxMemoryTypes {};
 
         ffxCreateBackendVKDesc backendDesc = { 0 };
         backendDesc.vkDevice = Device;
