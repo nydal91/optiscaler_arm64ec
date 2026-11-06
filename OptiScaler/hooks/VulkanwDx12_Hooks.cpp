@@ -4,6 +4,7 @@
 #include <unordered_set>
 
 #include "VulkanwDx12_Hooks.h"
+#include "Vulkan_DeferredEvaluate.h"
 
 #include <State.h>
 #include <Config.h>
@@ -1345,6 +1346,7 @@ void Vulkan_wDx12::hk_vkCmdEndRenderPass(VkCommandBuffer commandBuffer)
 #endif
 
     o_vkCmdEndRenderPass(cmdBuffer);
+    VkDeferredEvaluate::OnRenderPassEnded(cmdBuffer, o_vkCmdPipelineBarrier);
 }
 
 void Vulkan_wDx12::hk_vkCmdSetDeviceMask(VkCommandBuffer commandBuffer, uint32_t deviceMask)
@@ -1494,6 +1496,7 @@ void Vulkan_wDx12::hk_vkCmdEndRenderPass2(VkCommandBuffer commandBuffer, const V
 #endif
 
     o_vkCmdEndRenderPass2(cmdBuffer, pSubpassEndInfo);
+    VkDeferredEvaluate::OnRenderPassEnded(cmdBuffer, o_vkCmdPipelineBarrier);
 }
 
 void Vulkan_wDx12::hk_vkCmdSetEvent2(VkCommandBuffer commandBuffer, VkEvent event,
@@ -1759,6 +1762,7 @@ void Vulkan_wDx12::hk_vkCmdEndRendering(VkCommandBuffer commandBuffer)
 #endif
 
     o_vkCmdEndRendering(cmdBuffer);
+    VkDeferredEvaluate::OnRenderPassEnded(cmdBuffer, o_vkCmdPipelineBarrier);
 }
 
 void Vulkan_wDx12::hk_vkCmdSetCullMode(VkCommandBuffer commandBuffer, VkCullModeFlags cullMode)
@@ -2435,6 +2439,7 @@ void Vulkan_wDx12::hk_vkCmdEndRenderingKHR(VkCommandBuffer commandBuffer)
 #endif
 
     o_vkCmdEndRenderingKHR(cmdBuffer);
+    VkDeferredEvaluate::OnRenderPassEnded(cmdBuffer, o_vkCmdPipelineBarrier);
 }
 
 void Vulkan_wDx12::hk_vkCmdSetDeviceMaskKHR(VkCommandBuffer commandBuffer, uint32_t deviceMask)
@@ -2584,6 +2589,7 @@ void Vulkan_wDx12::hk_vkCmdEndRenderPass2KHR(VkCommandBuffer commandBuffer, cons
 #endif
 
     o_vkCmdEndRenderPass2KHR(cmdBuffer, pSubpassEndInfo);
+    VkDeferredEvaluate::OnRenderPassEnded(cmdBuffer, o_vkCmdPipelineBarrier);
 }
 
 void Vulkan_wDx12::hk_vkCmdDrawIndirectCountKHR(VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset,
@@ -6090,6 +6096,7 @@ void Vulkan_wDx12::hk_vkCmdExecuteCommands(VkCommandBuffer commandBuffer, uint32
     }
 
     o_vkCmdExecuteCommands(cmdBuffer, commandBufferCount, pCommandBuffers);
+    VkDeferredEvaluate::OnExecuteCommands(cmdBuffer, commandBufferCount, pCommandBuffers);
 }
 
 bool Vulkan_wDx12::RegisterVirtualCommandBuffer(VkCommandBuffer commandBuffer, VkCommandBuffer virtualCommandBuffer)
@@ -6603,6 +6610,8 @@ VkResult Vulkan_wDx12::hk_vkBeginCommandBuffer(VkCommandBuffer commandBuffer,
     if (GetVirtualCommandBuffer(commandBuffer) == VK_NULL_HANDLE)
         cmdBufferStateTracker.OnBegin(commandBuffer, pBeginInfo);
 
+    VkDeferredEvaluate::OnBeginCommandBuffer(commandBuffer, pBeginInfo);
+
 #ifdef LOG_ALL_RECORDS
     LOG_DEBUG("commandBuffer: {:X}", (size_t) commandBuffer);
 #endif
@@ -6640,6 +6649,8 @@ VkResult Vulkan_wDx12::hk_vkResetCommandBuffer(VkCommandBuffer commandBuffer, Vk
     if (GetVirtualCommandBuffer(commandBuffer) == VK_NULL_HANDLE)
         cmdBufferStateTracker.OnReset(commandBuffer);
 
+    VkDeferredEvaluate::Forget(commandBuffer);
+
     return o_vkResetCommandBuffer(commandBuffer, flags);
 }
 
@@ -6653,6 +6664,9 @@ void Vulkan_wDx12::hk_vkFreeCommandBuffers(VkDevice device, VkCommandPool comman
 
     // Notify state tracker before freeing
     cmdBufferStateTracker.OnFreeCommandBuffers(commandPool, commandBufferCount, pCommandBuffers);
+
+    for (uint32_t i = 0; i < commandBufferCount; i++)
+        VkDeferredEvaluate::Forget(pCommandBuffers[i]);
 
     // Call original function
     o_vkFreeCommandBuffers(device, commandPool, commandBufferCount, pCommandBuffers);

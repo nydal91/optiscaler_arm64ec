@@ -225,6 +225,8 @@ struct NVNGX_Parameters : public NVSDK_NGX_Parameter
 
     void Reset() override;
 
+    void CopyValuesFrom(const NVNGX_Parameters& other);
+
     std::vector<std::string> enumerate() const;
 
   private:

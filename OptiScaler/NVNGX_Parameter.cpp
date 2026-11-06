@@ -355,6 +355,12 @@ void NVNGX_Parameters::Reset()
     LOG_DEBUG("End");
 }
 
+void NVNGX_Parameters::CopyValuesFrom(const NVNGX_Parameters& other)
+{
+    std::scoped_lock lock(m_mutex, other.m_mutex);
+    m_values = other.m_values;
+}
+
 std::vector<std::string> NVNGX_Parameters::enumerate() const
 {
     std::vector<std::string> keys;

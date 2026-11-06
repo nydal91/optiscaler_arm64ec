@@ -427,6 +427,7 @@ copy NUL "$(SolutionDir)x64\Release\a\!! EXTRACT ALL FILES TO GAME FOLDER !!" /Y
     <ClInclude Include="shaders\Shader_Dx11.h" />
     <ClInclude Include="spoofing\User32_Spoofing.h" />
     <ClInclude Include="hooks\VulkanwDx12_Hooks.h" />
+    <ClInclude Include="hooks\Vulkan_DeferredEvaluate.h" />
     <ClInclude Include="misc\IdentifyGpu.h" />
     <ClInclude Include="inputs\FSR2_Dx11.h" />
     <ClInclude Include="inputs\FSR2_Vk.h" />
@@ -702,6 +703,7 @@ copy NUL "$(SolutionDir)x64\Release\a\!! EXTRACT ALL FILES TO GAME FOLDER !!" /Y
     <ClCompile Include="hooks\Kernel_Hooks.cpp" />
     <ClCompile Include="hooks\LibraryLoad_Hooks.cpp" />
     <ClCompile Include="hooks\VulkanwDx12_Hooks.cpp" />
+    <ClCompile Include="hooks\Vulkan_DeferredEvaluate.cpp" />
     <ClCompile Include="shaders\reproject\mouseInputs\InputCollection.cpp" />
     <ClCompile Include="shaders\hud_copy\HudCopy_Vk.cpp" />
     <ClCompile Include="inputs\FG\Streamline_Inputs_Sl1_Dx12.cpp" />

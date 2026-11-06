@@ -6,6 +6,7 @@
 #include "NVNGX_DLSS.h"
 #include <framegen/nvngx/Nvngx_FG.h>
 #include <inputs/FG/Upscaler_Inputs_Vk.h>
+#include <hooks/Vulkan_DeferredEvaluate.h>
 #include "NVNGX_Parameter.h"
 #include "proxies/NVNGX_Proxy.h"
 
@@ -959,6 +960,8 @@ NVSDK_NGX_API NVSDK_NGX_Result NVSDK_NGX_VULKAN_ReleaseFeature(NVSDK_NGX_Handle*
         return Nvngx_FG::VULKAN_ReleaseFeature(InHandle);
     }
 
+    VkDeferredEvaluate::ForgetFeature(handleId);
+
     if (!shutdown)
         LOG_INFO("releasing feature with id {0}", handleId);
 
@@ -1059,6 +1062,12 @@ NVSDK_NGX_API NVSDK_NGX_Result NVSDK_NGX_VULKAN_EvaluateFeature(VkCommandBuffer 
     else if (handleId >= NVNGX_PROVIDER_ID_OFFSET)
     {
         return Nvngx_FG::VULKAN_EvaluateFeature(InCmdList, InFeatureHandle, InParameters, InCallback);
+    }
+
+    if (VkDeferredEvaluate::ContinuesRenderPass(InCmdList) &&
+        VkDeferredEvaluate::Defer(InCmdList, InFeatureHandle, InParameters))
+    {
+        return NVSDK_NGX_Result_Success;
     }
 
     evalCounter++;
