@@ -1854,7 +1854,7 @@ static HRESULT hkCheckFeatureSupport(ID3D12Device* device, D3D12_FEATURE Feature
     auto result = o_CheckFeatureSupport(device, Feature, pFeatureSupportData, FeatureSupportDataSize);
 
     if (_reportShaderModel64 && SUCCEEDED(result) && Feature == D3D12_FEATURE_SHADER_MODEL &&
-        IdentifyGpu::getPrimaryGpu().d3d12IsVkd3dProton)
+        IdentifyGpu::gameUsesVkd3dProton())
     {
         auto shaderModel = (D3D12_FEATURE_DATA_SHADER_MODEL*) pFeatureSupportData;
 

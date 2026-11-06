@@ -28,7 +28,8 @@ class D3D12Hooks
     static void SetHideMinPrecision16(bool enable);
 
     // vkd3d-proton reports SM 6.0 when the device lacks native 16-bit ops, but still runs the SM 6.4 shaders of
-    // XeSS. Reports SM 6.4 to CheckFeatureSupport on the CALLING THREAD in that case.
+    // XeSS. Reports SM 6.4 to CheckFeatureSupport on the CALLING THREAD in that case, for DX12 games only:
+    // DX11 games would then fail on every frame, as they can't share their textures with D3D12 there.
     static void SetReportShaderModel64(bool enable);
 };
 
