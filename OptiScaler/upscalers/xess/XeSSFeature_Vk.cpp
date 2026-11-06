@@ -2,6 +2,7 @@
 #include "XeSSFeature_Vk.h"
 #include <nvsdk_ngx_vk.h>
 #include <imgui/ImGuiNotify.hpp>
+#include <hooks/VulkanwDx12_Hooks.h>
 
 static std::string ResultToString(xess_result_t result)
 {
@@ -463,6 +464,12 @@ bool XeSSFeature_Vk::EvaluateInternal(VkCommandBuffer InCmdBuffer, NVSDK_NGX_Par
                       &params.inputResponsiveMaskBase.y);
 
     LOG_DEBUG("Executing!!");
+    {
+        auto lvl = Vulkan_wDx12::cmdBufferStateTracker.GetCommandBufferLevel(InCmdBuffer);
+        static int diagCount = 0;
+        if (diagCount++ < 40)
+            LOG_INFO("DIAG XeSS cmd {:X} level {}", (size_t) InCmdBuffer, lvl.has_value() ? (int) *lvl : -1);
+    }
     xessResult = XeSSProxy::VKExecute()(_xessContext, InCmdBuffer, &params);
 
     if (xessResult != XESS_RESULT_SUCCESS)

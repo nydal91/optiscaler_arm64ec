@@ -6,6 +6,93 @@
 
 using namespace OptiMath;
 
+
+// TEMPORARY DIAGNOSTIC (diag-vk branch only): names the Vulkan call the FSR backend fails on
+namespace
+{
+PFN_vkGetDeviceProcAddr o_gdpa = nullptr;
+#define DIAG_FN(name, sig, args, extra)                                                                                \
+    PFN_##name o_##name = nullptr;                                                                                     \
+    VKAPI_ATTR VkResult VKAPI_CALL d_##name sig                                                                        \
+    {                                                                                                                  \
+        auto r = o_##name args;                                                                                        \
+        if (r != VK_SUCCESS)                                                                                           \
+        {                                                                                                              \
+            LOG_ERROR("DIAG " #name " returned {}", (int) r);                                                          \
+            extra;                                                                                                     \
+        }                                                                                                              \
+        return r;                                                                                                      \
+    }
+DIAG_FN(vkCreateBuffer, (VkDevice d, const VkBufferCreateInfo* c, const VkAllocationCallbacks* a, VkBuffer* o),
+        (d, c, a, o), LOG_ERROR("DIAG buffer size {} usage {:X}", (uint64_t) c->size, (uint32_t) c->usage))
+DIAG_FN(vkCreateImage, (VkDevice d, const VkImageCreateInfo* c, const VkAllocationCallbacks* a, VkImage* o),
+        (d, c, a, o),
+        LOG_ERROR("DIAG image fmt {} {}x{}x{} mips {} layers {} usage {:X} flags {:X} type {}", (int) c->format,
+                  c->extent.width, c->extent.height, c->extent.depth, c->mipLevels, c->arrayLayers,
+                  (uint32_t) c->usage, (uint32_t) c->flags, (int) c->imageType))
+DIAG_FN(vkAllocateMemory, (VkDevice d, const VkMemoryAllocateInfo* c, const VkAllocationCallbacks* a, VkDeviceMemory* o),
+        (d, c, a, o),
+        LOG_ERROR("DIAG alloc size {} type {} pNext {:X}", (uint64_t) c->allocationSize, c->memoryTypeIndex,
+                  (size_t) c->pNext))
+DIAG_FN(vkBindBufferMemory, (VkDevice d, VkBuffer b, VkDeviceMemory m, VkDeviceSize s), (d, b, m, s), )
+DIAG_FN(vkBindImageMemory, (VkDevice d, VkImage b, VkDeviceMemory m, VkDeviceSize s), (d, b, m, s), )
+DIAG_FN(vkMapMemory, (VkDevice d, VkDeviceMemory m, VkDeviceSize o2, VkDeviceSize s, VkMemoryMapFlags f, void** p),
+        (d, m, o2, s, f, p), )
+DIAG_FN(vkCreateImageView, (VkDevice d, const VkImageViewCreateInfo* c, const VkAllocationCallbacks* a, VkImageView* o),
+        (d, c, a, o), LOG_ERROR("DIAG view fmt {}", (int) c->format))
+DIAG_FN(vkCreateSampler, (VkDevice d, const VkSamplerCreateInfo* c, const VkAllocationCallbacks* a, VkSampler* o),
+        (d, c, a, o), )
+DIAG_FN(vkCreateDescriptorPool,
+        (VkDevice d, const VkDescriptorPoolCreateInfo* c, const VkAllocationCallbacks* a, VkDescriptorPool* o),
+        (d, c, a, o), LOG_ERROR("DIAG pool maxSets {} flags {:X}", c->maxSets, (uint32_t) c->flags))
+DIAG_FN(vkCreateDescriptorSetLayout,
+        (VkDevice d, const VkDescriptorSetLayoutCreateInfo* c, const VkAllocationCallbacks* a,
+         VkDescriptorSetLayout* o),
+        (d, c, a, o), LOG_ERROR("DIAG setlayout bindings {}", c->bindingCount))
+DIAG_FN(vkCreatePipelineLayout,
+        (VkDevice d, const VkPipelineLayoutCreateInfo* c, const VkAllocationCallbacks* a, VkPipelineLayout* o),
+        (d, c, a, o), )
+DIAG_FN(vkCreateShaderModule,
+        (VkDevice d, const VkShaderModuleCreateInfo* c, const VkAllocationCallbacks* a, VkShaderModule* o),
+        (d, c, a, o), LOG_ERROR("DIAG shader size {}", (uint64_t) c->codeSize))
+DIAG_FN(vkCreateComputePipelines,
+        (VkDevice d, VkPipelineCache pc, uint32_t n, const VkComputePipelineCreateInfo* c,
+         const VkAllocationCallbacks* a, VkPipeline* o),
+        (d, pc, n, c, a, o), )
+DIAG_FN(vkAllocateDescriptorSets, (VkDevice d, const VkDescriptorSetAllocateInfo* c, VkDescriptorSet* o), (d, c, o), )
+#undef DIAG_FN
+
+PFN_vkVoidFunction VKAPI_CALL DiagGdpa(VkDevice device, const char* name)
+{
+    auto real = o_gdpa(device, name);
+    LOG_INFO("DIAG gdpa {} -> {:X}", name, (size_t) real);
+    if (real == nullptr)
+        return real;
+#define DIAG_MAP(n)                                                                                                    \
+    if (strcmp(name, #n) == 0)                                                                                         \
+    {                                                                                                                  \
+        o_##n = reinterpret_cast<PFN_##n>(real);                                                                       \
+        return reinterpret_cast<PFN_vkVoidFunction>(d_##n);                                                            \
+    }
+    DIAG_MAP(vkCreateBuffer)
+    DIAG_MAP(vkCreateImage)
+    DIAG_MAP(vkAllocateMemory)
+    DIAG_MAP(vkBindBufferMemory)
+    DIAG_MAP(vkBindImageMemory)
+    DIAG_MAP(vkMapMemory)
+    DIAG_MAP(vkCreateImageView)
+    DIAG_MAP(vkCreateSampler)
+    DIAG_MAP(vkCreateDescriptorPool)
+    DIAG_MAP(vkCreateDescriptorSetLayout)
+    DIAG_MAP(vkCreatePipelineLayout)
+    DIAG_MAP(vkCreateShaderModule)
+    DIAG_MAP(vkCreateComputePipelines)
+    DIAG_MAP(vkAllocateDescriptorSets)
+#undef DIAG_MAP
+    return real;
+}
+} // namespace
+
 bool FSR2FeatureVk::InitFSR2(const NVSDK_NGX_Parameter* InParameters)
 {
     LOG_FUNC();
@@ -25,8 +112,9 @@ bool FSR2FeatureVk::InitFSR2(const NVSDK_NGX_Parameter* InParameters)
         auto scratchBufferSize = ffxFsr2GetScratchMemorySizeVK(PhysicalDevice);
         void* scratchBuffer = calloc(scratchBufferSize, 1);
 
+        o_gdpa = vkGetDeviceProcAddr;
         auto errorCode = ffxFsr2GetInterfaceVK(&_contextDesc.callbacks, scratchBuffer, scratchBufferSize,
-                                               PhysicalDevice, vkGetDeviceProcAddr);
+                                               PhysicalDevice, DiagGdpa);
 
         if (errorCode != FFX_OK)
         {
