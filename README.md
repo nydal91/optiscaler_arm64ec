@@ -11,6 +11,57 @@
 </div>
 <br />
 
+## OptiScaler ARM64EC build for Winlator
+
+> [!IMPORTANT]
+> This is an **unofficial ARM64EC build** of [OptiScaler](https://github.com/optiscaler/OptiScaler). Please report problems with it here, not to the OptiScaler team. Everything below this section is the upstream README.
+
+**[Download the latest ARM64EC release](https://github.com/nydal91/optiscaler_arm64ec/releases/latest)**
+
+This build lets x64 Windows games use OptiScaler on ARM devices. It works in **Winlator** on Android with an ARM64EC Wine, and it's also meant for Proton/Wine ARM64EC on Linux and Windows 11 on ARM. The normal x64 OptiScaler can't hook the ARM64EC system DLLs on these setups, so it crashes or does nothing.
+
+### What it offers
+
+- **ARM64EC OptiScaler proxy**, so the overlay, upscaler swapping and settings run in x64 games on ARM devices.
+- **SGSR 1 and SGSR 2** (Snapdragon Game Super Resolution), added in this build as native backends for DX11, DX12 and Vulkan. They need no vendor runtime.
+- **FSR on Adreno:** Vulkan and DX12 fixes for FSR 2 and FSR 3 in Winlator.
+- **Unity Vulkan games on Turnip:** upscaling work is moved out of the render pass, because Turnip silently drops it there and the picture comes out blank.
+- **XeSS on DX12 with vkd3d-proton**, usable but slow on mobile GPUs.
+
+### Tested in Winlator
+
+Tested on a RedMagic 8 Pro (Snapdragon 8 Gen 2, Adreno 740) with the Winlator cmod fork, Proton 11 ARM64EC, FEXCore 2601, Turnip 26.2.0, DXVK 2.3.1 and vkd3d-proton 3.0.1. Games: Pumpkin Jack (DX11 and DX12) and Haste (Vulkan).
+
+| Upscaler | Ini value | DX11 | DX12 | Vulkan |
+| --- | --- | --- | --- | --- |
+| SGSR 1 | `sgsr1` | Works | Works | Works |
+| SGSR 2 | `sgsr2` | Works | Works | Works |
+| FSR 2.1 | `fsr21` | Not available | Works | Works |
+| FSR 2.2 | `fsr22` | Works | Works | Works |
+| FSR 3 | `ffx` | Not tested (`fsr31`) | Works | Works |
+| XeSS | `xess` | Intel GPUs only | Works, about 7 fps | Works |
+
+- **Not working here:** `xess_12`, `fsr21_12` and `ffx_12`. These bridge modes need texture sharing that this setup doesn't provide.
+- **Not available or not tested:** DLSS and FSR 4 aren't available on Adreno. Frame generation hasn't been tested.
+- **SGSR 1** only looks at the current frame, so expect more aliasing and shimmer than from SGSR 2 or FSR.
+- Testing covered two games on one phone, so other games and GPUs may behave differently.
+
+### Install in Winlator
+
+1. Use a container with an **ARM64EC Wine** build, such as `proton-11.0-1-arm64ec`, and DXVK + vkd3d as the graphics wrapper.
+2. Extract the release zip and copy its contents into the folder with the game's real `.exe`. For Unreal Engine games that's usually `<Game>/Binaries/Win64/`.
+3. Rename `OptiScaler.dll` to `dxgi.dll`.
+4. Choose an upscaler in `OptiScaler.ini` with `Dx11Upscaler`, `Dx12Upscaler` or `VulkanUpscaler`.
+5. **For Vulkan games**, also set `Vulkan=true` and `VulkanExtensionSpoofing=true`.
+6. Start the game and turn on **DLSS** in its graphics settings. OptiScaler only runs when the game asks for DLSS, and some games turn the option off on every launch.
+
+If OptiScaler doesn't load, add `WINEDLLOVERRIDES=dxgi=n,b` to the container's environment variables.
+
+More detail is in [README-ARM64EC.md](arm64ec/README-ARM64EC.md), which is also in the zip. Don't use this with online games: anti-cheat systems may flag it.
+
+<hr />
+<br />
+
 ## Table of Contents
 
 **1.** [**About**](#about)  

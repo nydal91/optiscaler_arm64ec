@@ -5,7 +5,8 @@ running on:
 
 - **Linux ARM64 with Proton/Wine ARM64EC** (Proton 11 ARM64 or a Wine build with
   ARM64EC support, e.g. on Snapdragon X Elite/Adreno hardware), or
-- **Windows 11 on ARM** (x64 game under emulation, ARM64EC system DLLs).
+- **Windows 11 on ARM** (x64 game under emulation, ARM64EC system DLLs), or
+- **Winlator on Android** with an ARM64EC Wine build (see below).
 
 An x64 or ARM64EC process can load both x64 and ARM64EC modules. The OptiScaler
 proxy is ARM64EC so its Detours hooks can operate on the ARM64EC system
@@ -13,6 +14,23 @@ proxy is ARM64EC so its Detours hooks can operate on the ARM64EC system
 `STATUS_ILLEGAL_INSTRUCTION` crashes or refused hooks. The x64 files in the
 `OptiScaler/` folder (XeSS, AMD FidelityFX, D3D12Core) are still x64 and run
 under emulation; this is expected.
+
+## Installation (Winlator on Android)
+
+Tested on Adreno 740 with the Winlator cmod fork, `proton-11.0-1-arm64ec`,
+FEXCore, Turnip, DXVK 2.3.1 and vkd3d-proton 3.0.1.
+
+1. Use a container with an ARM64EC Wine build and DXVK + vkd3d as the wrapper.
+2. Extract **all** files into the directory containing the real game executable.
+3. Rename `OptiScaler.dll` to `dxgi.dll`.
+4. Choose an upscaler in `OptiScaler.ini` with `Dx11Upscaler`, `Dx12Upscaler` or
+   `VulkanUpscaler`. For Vulkan games also set `Vulkan=true` and
+   `VulkanExtensionSpoofing=true`.
+5. Start the game and turn on DLSS in its graphics settings. OptiScaler only runs
+   when the game asks for DLSS.
+
+If OptiScaler doesn't load, add `WINEDLLOVERRIDES=dxgi=n,b` to the container's
+environment variables.
 
 ## Installation (Proton on ARM64 Linux)
 
@@ -58,6 +76,9 @@ the driver lacks:
 
 - **FSR 2.2.1 and FSR 3.1.2** are compiled natively into the ARM64EC proxy and
   are the realistic outputs on Adreno/Mali class hardware.
+- **SGSR 1 and SGSR 2** are compiled natively into the proxy for DX11, DX12 and
+  Vulkan (`sgsr1`, `sgsr2`). SGSR 1 only uses the current frame, so expect more
+  aliasing and shimmer than from SGSR 2 or FSR.
 - **DLSS** and **FSR4** depend on vendor runtimes/GPUs. On Adreno, DLSS is
   generally not detected and FSR4 is unavailable.
 - **XeSS** runs on DX12 on Adreno 740 with `Dx12Upscaler=xess`, but at about
