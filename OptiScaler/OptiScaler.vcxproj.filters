@@ -149,6 +149,24 @@
     <ClInclude Include="output_scaling\OS_Dx11.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="upscalers\sgsr1\SGSR1Constants.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="upscalers\sgsr1\SGSR1Feature_Dx11.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="upscalers\sgsr1\SGSR1Feature_Dx12.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="upscalers\sgsr1\SGSR1Pass_Dx12.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="upscalers\sgsr1\SGSR1Feature_Vk.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="upscalers\sgsr1\SGSR1Pass_Vk.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="upscalers\sgsr2\SGSR2Constants.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1305,6 +1323,24 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="upscalers\fsr31\FSR31Feature.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="upscalers\sgsr1\SGSR1Constants.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="upscalers\sgsr1\SGSR1Feature_Dx11.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="upscalers\sgsr1\SGSR1Feature_Dx12.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="upscalers\sgsr1\SGSR1Pass_Dx12.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="upscalers\sgsr1\SGSR1Feature_Vk.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="upscalers\sgsr1\SGSR1Pass_Vk.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="upscalers\sgsr2\SGSR2Constants.cpp">

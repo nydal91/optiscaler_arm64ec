@@ -16,6 +16,7 @@
 #include "upscalers/ffx/FFXFeature_Dx11On12.h"
 #include "upscalers/xess/XeSSFeature_Dx11.h"
 #include "upscalers/xess/XeSSFeature_Dx11on12.h"
+#include "upscalers/sgsr1/SGSR1Feature_Dx11.h"
 #include "upscalers/sgsr2/SGSR2Feature_Dx11.h"
 #include <misc/IdentifyGpu.h>
 #include <imgui/ImGuiNotify.hpp>
@@ -55,6 +56,10 @@ bool FeatureProvider_Dx11::GetFeature(Upscaler upscaler, UINT handleId, NVSDK_NG
 
     case Upscaler::FFX_on12:
         *feature = std::make_unique<FFXFeatureDx11on12>(handleId, parameters);
+        break;
+
+    case Upscaler::SGSR1:
+        *feature = std::make_unique<SGSR1FeatureDx11>(handleId, parameters);
         break;
 
     case Upscaler::SGSR2:

@@ -99,7 +99,7 @@ bool IFeature_Dx11::Evaluate(ID3D11DeviceContext* InDeviceContext, NVSDK_NGX_Par
 
     // Those upcalers don't have their own sharpness so always need to use RCAS when sharpness is set
     auto upscaler = GetUpscalerType();
-    bool useRcas = upscaler == Upscaler::XeSS || upscaler == Upscaler::SGSR2 ||
+    bool useRcas = upscaler == Upscaler::XeSS || upscaler == Upscaler::SGSR1 || upscaler == Upscaler::SGSR2 ||
                    (upscaler == Upscaler::DLSS && Version() >= feature_version(2, 5, 1)) || upscaler == Upscaler::DLSSD;
 
     if (!useRcas)

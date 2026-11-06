@@ -574,6 +574,12 @@ copy NUL "$(SolutionDir)x64\Release\a\!! EXTRACT ALL FILES TO GAME FOLDER !!" /Y
     <ClInclude Include="upscalers\FeatureProvider_Vk.h" />
     <ClInclude Include="upscalers\ffx\FFXFeature.h" />
     <ClInclude Include="upscalers\fsr31\FSR31Feature_Dx11.h" />
+    <ClInclude Include="upscalers\sgsr1\SGSR1Constants.h" />
+    <ClInclude Include="upscalers\sgsr1\SGSR1Feature_Dx11.h" />
+    <ClInclude Include="upscalers\sgsr1\SGSR1Feature_Dx12.h" />
+    <ClInclude Include="upscalers\sgsr1\SGSR1Pass_Dx12.h" />
+    <ClInclude Include="upscalers\sgsr1\SGSR1Feature_Vk.h" />
+    <ClInclude Include="upscalers\sgsr1\SGSR1Pass_Vk.h" />
     <ClInclude Include="upscalers\sgsr2\SGSR2Constants.h" />
     <ClInclude Include="upscalers\sgsr2\SGSR2Feature_Dx11.h" />
     <ClInclude Include="upscalers\sgsr2\SGSR2Feature_Dx12.h" />
@@ -878,6 +884,12 @@ copy NUL "$(SolutionDir)x64\Release\a\!! EXTRACT ALL FILES TO GAME FOLDER !!" /Y
     <ClCompile Include="upscalers\fsr2_212\FSR2Feature_Vk_212.cpp" />
     <ClCompile Include="upscalers\ffx\FFXFeature.cpp" />
     <ClCompile Include="upscalers\fsr31\FSR31Feature_Dx11.cpp" />
+    <ClCompile Include="upscalers\sgsr1\SGSR1Constants.cpp" />
+    <ClCompile Include="upscalers\sgsr1\SGSR1Feature_Dx11.cpp" />
+    <ClCompile Include="upscalers\sgsr1\SGSR1Feature_Dx12.cpp" />
+    <ClCompile Include="upscalers\sgsr1\SGSR1Pass_Dx12.cpp" />
+    <ClCompile Include="upscalers\sgsr1\SGSR1Feature_Vk.cpp" />
+    <ClCompile Include="upscalers\sgsr1\SGSR1Pass_Vk.cpp" />
     <ClCompile Include="upscalers\sgsr2\SGSR2Constants.cpp" />
     <ClCompile Include="upscalers\sgsr2\SGSR2Feature_Dx11.cpp" />
     <ClCompile Include="upscalers\sgsr2\SGSR2Feature_Dx12.cpp" />
@@ -975,6 +987,10 @@ copy NUL "$(SolutionDir)x64\Release\a\!! EXTRACT ALL FILES TO GAME FOLDER !!" /Y
     <None Include="Source.def" />
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="upscalers\sgsr1\shaders\sgsr1_upscale.hlsl">
+      <VariableName>sgsr1_upscale_cso</VariableName>
+      <HeaderFileOutput>upscalers\sgsr1\generated\sgsr1_upscale_cso.h</HeaderFileOutput>
+    </FxCompile>
     <FxCompile Include="upscalers\sgsr2\shaders\sgsr2_convert.hlsl">
       <VariableName>sgsr2_convert_cso</VariableName>
       <HeaderFileOutput>upscalers\sgsr2\generated\sgsr2_convert_cso.h</HeaderFileOutput>

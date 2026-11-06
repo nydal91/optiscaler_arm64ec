@@ -68,6 +68,8 @@ enum class Upscaler
 
     DLSSD, // "dlssd", used for the DLSS-D/Ray Reconstruction upscaler+denoiser backend
 
+    SGSR1, // "sgsr1", Snapdragon Game Super Resolution 1, native DX11, DX12 and Vulkan
+
     SGSR2, // "sgsr2", Snapdragon Game Super Resolution 2, native DX11, DX12 and Vulkan
     Reset
 };
