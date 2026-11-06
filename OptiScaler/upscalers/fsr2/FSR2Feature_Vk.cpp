@@ -2,6 +2,7 @@
 #include <spoofing/Vulkan_Spoofing.h>
 #include <Config.h>
 #include "FSR2Feature_Vk.h"
+#include <hooks/VulkanwDx12_Hooks.h>
 #include "nvsdk_ngx_vk.h"
 #include "MathUtils.h"
 
@@ -11,6 +12,7 @@ using namespace OptiMath;
 namespace
 {
 PFN_vkGetDeviceProcAddr o_gdpa = nullptr;
+VkImage diagPendingClear = VK_NULL_HANDLE;
 #define DIAG_FN(name, sig, args, extra)                                                                                \
     PFN_##name o_##name = nullptr;                                                                                     \
     VKAPI_ATTR VkResult VKAPI_CALL d_##name sig                                                                        \
@@ -500,7 +502,36 @@ bool FSR2FeatureVk::EvaluateInternal(VkCommandBuffer InCmdBuffer, NVSDK_NGX_Para
         params.preExposure = 1.0f;
 
     LOG_DEBUG("Dispatch!!");
+    {
+        static int diagOut = 0;
+        uint32_t diagFlags = 0xFFFF;
+        {
+            std::lock_guard<std::mutex> lk(Vulkan_wDx12::diagFlagsMutex);
+            auto it = Vulkan_wDx12::diagFlags.find(InCmdBuffer);
+            if (it != Vulkan_wDx12::diagFlags.end())
+                diagFlags = it->second;
+        }
+        NVSDK_NGX_Resource_VK* diagOutput = nullptr;
+        InParameters->Get(NVSDK_NGX_Parameter_Output, (void**) &diagOutput);
+        if (diagOut++ < 60 && diagOutput != nullptr)
+            LOG_INFO("DIAG eval cmd {:X} flags {:X} out img {:X} fmt {} {}x{} rw {}", (size_t) InCmdBuffer, diagFlags,
+                     (size_t) diagOutput->Resource.ImageViewInfo.Image, (int) diagOutput->Resource.ImageViewInfo.Format,
+                     diagOutput->Resource.ImageViewInfo.Width, diagOutput->Resource.ImageViewInfo.Height,
+                     (int) diagOutput->ReadWrite);
+        diagPendingClear = diagOutput != nullptr && diagFlags != 0xFFFF && (diagFlags & 2) == 0
+                               ? diagOutput->Resource.ImageViewInfo.Image
+                               : VK_NULL_HANDLE;
+    }
     auto result = ffxFsr2ContextDispatch(&_context, &params);
+    if (diagPendingClear != VK_NULL_HANDLE)
+    {
+        VkClearColorValue magenta {};
+        magenta.float32[0] = 1.0f;
+        magenta.float32[2] = 1.0f;
+        magenta.float32[3] = 1.0f;
+        VkImageSubresourceRange range { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
+        vkCmdClearColorImage(InCmdBuffer, diagPendingClear, VK_IMAGE_LAYOUT_GENERAL, &magenta, 1, &range);
+    }
 
     if (result != FFX_OK)
     {

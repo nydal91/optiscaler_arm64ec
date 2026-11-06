@@ -6608,6 +6608,10 @@ VkResult Vulkan_wDx12::hk_vkBeginCommandBuffer(VkCommandBuffer commandBuffer,
 #endif
 
     {
+        {
+            std::lock_guard<std::mutex> lk(diagFlagsMutex);
+            diagFlags[commandBuffer] = pBeginInfo ? (uint32_t) pBeginInfo->flags : 0;
+        }
         static int diagBegin = 0;
         auto diagLvl = cmdBufferStateTracker.GetCommandBufferLevel(commandBuffer);
         if (diagLvl.has_value() && *diagLvl != VK_COMMAND_BUFFER_LEVEL_PRIMARY && diagBegin++ < 400)

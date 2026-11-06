@@ -889,6 +889,8 @@ class Vulkan_wDx12
 
   public:
     inline static vk_state::CommandBufferStateTracker cmdBufferStateTracker;
+    inline static std::mutex diagFlagsMutex;
+    inline static std::unordered_map<VkCommandBuffer, uint32_t> diagFlags;
 
     // Command-buffer redirection and queue-submit transactions are keyed by command buffer and synchronized.
     // This allows recording/end/submit to occur on different application threads without global single-slot state.
