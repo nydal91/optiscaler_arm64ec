@@ -1,5 +1,5 @@
 #!/bin/sh
-# Compiles the Vulkan version of the shaders into ../precompile, needs glslang, SPIRV-Tools and Python
+# Compiles the Vulkan version of the shaders into ../precompile, needs glslang, SPIRV-Tools, Python and clang-format
 set -e
 cd "$(dirname "$0")"
 out=../precompile
@@ -20,4 +20,5 @@ for name in convert upscale; do
     python3 ../../../shaders/shader_tools/create_header.py "$out/sgsr2_$name.spv" \
         "$out/sgsr2_${name}_Vk.h" "sgsr2_${name}_spv"
     rm "$out/sgsr2_$name.spv"
+    clang-format -i --style=file "$out/sgsr2_${name}_Vk.h"
 done
