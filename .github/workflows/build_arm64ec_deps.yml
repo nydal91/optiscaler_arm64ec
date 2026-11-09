@@ -6,6 +6,8 @@ name: Build ARM64EC dependencies
 
 on:
   workflow_dispatch:
+  push:
+    paths: [ "arm64ec/deps/**", ".github/workflows/build_arm64ec_deps.yml" ]
 
 jobs:
   build:
