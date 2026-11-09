@@ -1,0 +1,49 @@
+name: Build ARM64EC dependencies
+
+# Rebuilds the static libraries in arm64ec/libs (FreeType, FSR 2.2.1, FSR 2.1.2
+# and FSR 3.1.2) and uploads them. Commit the result to arm64ec/libs.
+# Detours, d3dx11 and vulkan-1 do not depend on the CRT and are not rebuilt.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-2022
+
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        submodules: 'true'
+
+    - name: Build dependencies
+      shell: powershell
+      run: >-
+        powershell -NoProfile -ExecutionPolicy Bypass -File arm64ec\deps\build-all.ps1
+        -Arch arm64ec -Configuration Release -BuildRoot "$env:RUNNER_TEMP\deps" -MaxCpu 4 -SkipDetours
+
+    - name: Check the libraries use the static CRT
+      shell: powershell
+      run: |
+        $ErrorActionPreference = 'Stop'
+        $bad = Get-ChildItem arm64ec\libs\freetype, arm64ec\libs\fsr2, arm64ec\libs\fsr2_212, arm64ec\libs\fsr31 -Filter *.lib |
+            Where-Object { Select-String -LiteralPath $_.FullName -Pattern 'DEFAULTLIB:"?(MSVCRT|msvcprt)' -Quiet }
+        if ($bad) { throw "Built with the dynamic CRT: $($bad.Name -join ', ')" }
+
+    - name: Upload logs
+      if: always()
+      uses: actions/upload-artifact@v7.0.0
+      with:
+        name: deps-logs
+        path: ${{ runner.temp }}\deps\logs
+        if-no-files-found: ignore
+
+    - uses: actions/upload-artifact@v7.0.0
+      with:
+        name: arm64ec-libs
+        path: |
+          arm64ec/libs/freetype
+          arm64ec/libs/fsr2
+          arm64ec/libs/fsr2_212
+          arm64ec/libs/fsr31
+        if-no-files-found: error

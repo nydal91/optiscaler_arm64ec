@@ -31,6 +31,7 @@ $ctx = Initialize-DepsEnvironment -Name 'fsr31' -Arch $Arch -Configuration $Conf
     -BuildRoot $BuildRoot -OutRoot $OutRoot -VSPath $VSPath -Clean:$Clean `
     -MaxCpu $MaxCpu -SkipToolchainCheck:$SkipToolchainCheck
 
+Initialize-SourceClone -Path $ctx.SourceFsr31 -Repository 'https://github.com/optiscaler/FidelityFX-SDK-DX11.git' -Branch 'optiscaler-build' -LogFile $ctx.LogFile
 Assert-Path -Path $ctx.SourceFsr31 -What 'FidelityFX-SDK-DX11 source clone'
 
 $workDir = Join-Path $BuildRoot ("work-{0}\fsr31" -f $Arch)

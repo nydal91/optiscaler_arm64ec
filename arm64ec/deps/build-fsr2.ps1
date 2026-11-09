@@ -27,6 +27,7 @@ $ctx = Initialize-DepsEnvironment -Name 'fsr2' -Arch $Arch -Configuration $Confi
     -BuildRoot $BuildRoot -OutRoot $OutRoot -VSPath $VSPath -Clean:$Clean `
     -MaxCpu $MaxCpu -SkipToolchainCheck:$SkipToolchainCheck
 
+Initialize-SourceClone -Path $ctx.SourceFsr2 -Repository 'https://github.com/optiscaler/FidelityFX-FSR2-DX11.git' -Branch 'master' -LogFile $ctx.LogFile
 Assert-Path -Path $ctx.SourceFsr2 -What 'FidelityFX-FSR2-DX11 source clone'
 
 $workDir = Join-Path $BuildRoot ("work-{0}\fsr2" -f $Arch)

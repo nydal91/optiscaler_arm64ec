@@ -104,6 +104,42 @@ function Resolve-VulkanSdk {
     return $null
 }
 
+# The FSR Vulkan backends only need the Vulkan headers and an import library
+# for find_package(Vulkan). When no SDK is installed (CI), build a minimal one
+# from the repository's Vulkan-Headers submodule and ARM64EC vulkan-1.lib.
+function New-MinimalVulkanSdk {
+    param([Parameter(Mandatory = $true)][string]$BuildRoot)
+
+    $headers = Join-Path $script:RepoRoot 'external\vulkan\include'
+    $importLib = Join-Path $script:RepoRoot 'arm64ec\libs\vulkan\vulkan-1.lib'
+    if (-not (Test-Path -LiteralPath (Join-Path $headers 'vulkan\vulkan.h')) -or
+        -not (Test-Path -LiteralPath $importLib)) {
+        return $null
+    }
+
+    $sdk = Join-Path $BuildRoot 'vulkan-sdk-minimal'
+    New-Item -ItemType Directory -Force -Path (Join-Path $sdk 'Lib') | Out-Null
+    Copy-Item -Path $headers -Destination (Join-Path $sdk 'Include') -Recurse -Force
+    Copy-Item -LiteralPath $importLib -Destination (Join-Path $sdk 'Lib\vulkan-1.lib') -Force
+    return $sdk
+}
+
+# Clone a dependency's sources into BuildRoot when they are not there yet.
+function Initialize-SourceClone {
+    param(
+        [Parameter(Mandatory = $true)][string]$Path,
+        [Parameter(Mandatory = $true)][string]$Repository,
+        [string]$Branch,
+        [Parameter(Mandatory = $true)][string]$LogFile
+    )
+
+    if (Test-Path -LiteralPath $Path) {
+        return
+    }
+    Write-Log "Sources not found at $Path; cloning $Repository" $LogFile
+    Invoke-GitClone -Repository $Repository -Destination $Path -Branch $Branch -LogFile $LogFile
+}
+
 function Test-Arm64ecToolchain {
     param(
         [Parameter(Mandatory = $true)][string]$VSPath,
@@ -194,6 +230,9 @@ function Initialize-DepsEnvironment {
     }
 
     $vulkanSdk = Resolve-VulkanSdk
+    if (-not $vulkanSdk) {
+        $vulkanSdk = New-MinimalVulkanSdk -BuildRoot $BuildRoot
+    }
     if ($vulkanSdk) {
         $env:VULKAN_SDK = $vulkanSdk
     }
@@ -366,6 +405,13 @@ function Invoke-CMakeConfigure {
     )
 
     $cmakeArgs = @('-S', $SourceDir, '-B', $BuildDir, '-G', 'Visual Studio 17 2022', '-A', $Ctx.PlatformArg) + $CacheArgs
+    if ($Ctx.Arch -eq 'arm64ec') {
+        # The ARM64EC proxy links the static CRT, so every library it links
+        # must too. A game can ship its own x64 ucrtbase/vcruntime140/msvcp140
+        # next to the exe, and a proxy using the dynamic CRT would bind to them.
+        $cmakeArgs += @('-DCMAKE_POLICY_DEFAULT_CMP0091=NEW',
+                        '-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded$<$<CONFIG:Debug>:Debug>')
+    }
     Invoke-NativeLogged -Exe $Ctx.CMake -Arguments $cmakeArgs -Label "CMake configure ($SourceDir)" -LogFile $Ctx.LogFile
 }
 
