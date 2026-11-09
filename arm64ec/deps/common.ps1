@@ -409,8 +409,16 @@ function Invoke-CMakeConfigure {
         # The ARM64EC proxy links the static CRT, so every library it links
         # must too. A game can ship its own x64 ucrtbase/vcruntime140/msvcp140
         # next to the exe, and a proxy using the dynamic CRT would bind to them.
+        # The FSR2 projects have no project() call, so CMake enables the
+        # languages before CMP0091 is set and ignores CMAKE_MSVC_RUNTIME_LIBRARY.
+        # Setting the per-config flags covers them too.
         $cmakeArgs += @('-DCMAKE_POLICY_DEFAULT_CMP0091=NEW',
                         '-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded$<$<CONFIG:Debug>:Debug>')
+        foreach ($lang in 'C', 'CXX') {
+            $cmakeArgs += @("-DCMAKE_${lang}_FLAGS_RELEASE=/MT /O2 /Ob2 /DNDEBUG",
+                            "-DCMAKE_${lang}_FLAGS_RELWITHDEBINFO=/MT /Zi /O2 /Ob1 /DNDEBUG",
+                            "-DCMAKE_${lang}_FLAGS_DEBUG=/MTd /Zi /Ob0 /Od /RTC1")
+        }
     }
     Invoke-NativeLogged -Exe $Ctx.CMake -Arguments $cmakeArgs -Label "CMake configure ($SourceDir)" -LogFile $Ctx.LogFile
 }
