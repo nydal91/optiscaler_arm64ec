@@ -110,12 +110,10 @@ the driver lacks:
   small; try `DxgiFactoryWrapping=true` as a diagnostic workaround.
 - **Overlay works but the upscaler does nothing**: confirm the game's actual
   input API and select an output backend that works on your GPU (FSR2/FSR3.1).
-- **DLL fails to load with a missing `VCRUNTIME140.dll`, `MSVCP140.dll` or
-  `MSVCP140_ATOMIC_WAIT.dll`**: the proxy was built with the dynamic MSVC
-  runtime. Wine/Proton normally provides ARM64EC builtins for these modules; on
-  Windows 11 on ARM install the ARM64 VC++ redistributable
-  (`vc_redist.arm64.exe`). Do not drop x64 copies of these DLLs next to the
-  proxy.
+- **Game ships its own `ucrtbase.dll`, `vcruntime140.dll` or `msvcp140.dll`**:
+  no action needed. The ARM64EC proxy links the MSVC runtime statically, so it
+  does not load these x64 DLLs. Builds before 2026-11-09 used the dynamic
+  runtime and hung or crashed in such games unless those DLLs were moved away.
 
 ## Proxy names
 
