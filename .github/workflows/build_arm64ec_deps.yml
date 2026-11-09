@@ -30,6 +30,10 @@ jobs:
         $ErrorActionPreference = 'Stop'
         $bad = Get-ChildItem arm64ec\libs\freetype, arm64ec\libs\fsr2, arm64ec\libs\fsr2_212, arm64ec\libs\fsr31 -Filter *.lib |
             Where-Object { Select-String -LiteralPath $_.FullName -Pattern 'DEFAULTLIB:"?(MSVCRT|msvcprt)' -Quiet }
+        foreach ($lib in $bad) {
+            Select-String -LiteralPath $lib.FullName -Pattern '(DEFAULTLIB|FAILIFMISMATCH):"?[A-Za-z_=]+' -AllMatches |
+                ForEach-Object { $_.Matches.Value } | Sort-Object -Unique | ForEach-Object { "$($lib.Name): $_" }
+        }
         if ($bad) { throw "Built with the dynamic CRT: $($bad.Name -join ', ')" }
 
     - name: Upload logs
@@ -40,7 +44,8 @@ jobs:
         path: ${{ runner.temp }}\deps\logs
         if-no-files-found: ignore
 
-    - uses: actions/upload-artifact@v7.0.0
+    - if: always()
+      uses: actions/upload-artifact@v7.0.0
       with:
         name: arm64ec-libs
         path: |
