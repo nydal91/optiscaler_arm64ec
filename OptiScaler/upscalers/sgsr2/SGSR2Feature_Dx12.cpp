@@ -115,8 +115,9 @@ bool SGSR2FeatureDx12::EvaluateInternal(ID3D12GraphicsCommandList* InCommandList
         return false;
     }
 
-    const auto displayWidth = static_cast<uint32_t>(outputDesc.Width);
-    const auto displayHeight = static_cast<uint32_t>(outputDesc.Height);
+    unsigned int displayWidth = 0;
+    unsigned int displayHeight = 0;
+    GetOutputExtent(static_cast<unsigned int>(outputDesc.Width), outputDesc.Height, &displayWidth, &displayHeight);
 
     bool recreated = false;
     if (!_passes->EnsureTextures(paramOutput, renderWidth, renderHeight, displayWidth, displayHeight, recreated))

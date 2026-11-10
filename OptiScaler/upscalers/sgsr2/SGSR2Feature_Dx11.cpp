@@ -286,8 +286,12 @@ bool SGSR2FeatureDx11::EvaluateInternal(ID3D11DeviceContext* InContext, NVSDK_NG
         return false;
     }
 
+    unsigned int outputWidth = 0;
+    unsigned int outputHeight = 0;
+    GetOutputExtent(outputDesc.Width, outputDesc.Height, &outputWidth, &outputHeight);
+
     bool recreated = false;
-    if (!EnsureBuffers(renderWidth, renderHeight, outputDesc.Width, outputDesc.Height, recreated))
+    if (!EnsureBuffers(renderWidth, renderHeight, outputWidth, outputHeight, recreated))
         return false;
 
     unsigned int resetFlag = 0;
@@ -297,8 +301,8 @@ bool SGSR2FeatureDx11::EvaluateInternal(ID3D11DeviceContext* InContext, NVSDK_NG
     SGSR2FrameInfo frame {};
     frame.renderWidth = renderWidth;
     frame.renderHeight = renderHeight;
-    frame.displayWidth = outputDesc.Width;
-    frame.displayHeight = outputDesc.Height;
+    frame.displayWidth = outputWidth;
+    frame.displayHeight = outputHeight;
     frame.depthWidth = depthDesc.Width;
     frame.depthHeight = depthDesc.Height;
     frame.targetWidth = TargetWidth();
@@ -374,8 +378,8 @@ bool SGSR2FeatureDx11::EvaluateInternal(ID3D11DeviceContext* InContext, NVSDK_NG
         InContext->CSSetShader(_upscaleShader.Get(), nullptr, 0);
         InContext->CSSetShaderResources(0, 3, srvs);
         InContext->CSSetUnorderedAccessViews(0, 2, uavs, nullptr);
-        InContext->Dispatch((outputDesc.Width + SGSR2ThreadGroupSize - 1) / SGSR2ThreadGroupSize,
-                            (outputDesc.Height + SGSR2ThreadGroupSize - 1) / SGSR2ThreadGroupSize, 1);
+        InContext->Dispatch((outputWidth + SGSR2ThreadGroupSize - 1) / SGSR2ThreadGroupSize,
+                            (outputHeight + SGSR2ThreadGroupSize - 1) / SGSR2ThreadGroupSize, 1);
         InContext->CSSetUnorderedAccessViews(0, 2, nullUavs, nullptr);
         InContext->CSSetShaderResources(0, 3, nullSrvs);
     }

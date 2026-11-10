@@ -93,8 +93,9 @@ bool SGSR2FeatureVk::EvaluateInternal(VkCommandBuffer InCmdBuffer, NVSDK_NGX_Par
         return false;
     }
 
-    const uint32_t displayWidth = output.Width;
-    const uint32_t displayHeight = output.Height;
+    unsigned int displayWidth = 0;
+    unsigned int displayHeight = 0;
+    GetOutputExtent(output.Width, output.Height, &displayWidth, &displayHeight);
 
     bool recreated = false;
     if (!_passes->EnsureTextures(renderWidth, renderHeight, displayWidth, displayHeight, recreated))

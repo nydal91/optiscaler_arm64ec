@@ -367,3 +367,25 @@ void IFeature::GetDynamicOutputResolution(NVSDK_NGX_Parameter* InParameters, uns
         *height = fsrDynamicOutputHeight;
     }
 }
+
+// Unreal can hand over an output texture that is larger than the display, and only shows its top-left
+// TargetWidth x TargetHeight part. Upscaling into the whole texture would then show a zoomed-in crop.
+void IFeature::GetOutputExtent(unsigned int textureWidth, unsigned int textureHeight, unsigned int* width,
+                               unsigned int* height)
+{
+    *width = textureWidth;
+    *height = textureHeight;
+
+    if (TargetWidth() > 0 && TargetHeight() > 0)
+    {
+        *width = std::min(textureWidth, TargetWidth());
+        *height = std::min(textureHeight, TargetHeight());
+    }
+
+    if (textureWidth != _lastOutputTextureWidth || textureHeight != _lastOutputTextureHeight)
+    {
+        LOG_INFO("Output texture {}x{}, upscaling to {}x{}", textureWidth, textureHeight, *width, *height);
+        _lastOutputTextureWidth = textureWidth;
+        _lastOutputTextureHeight = textureHeight;
+    }
+}

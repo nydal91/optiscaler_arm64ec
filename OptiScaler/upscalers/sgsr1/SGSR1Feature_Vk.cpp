@@ -91,8 +91,12 @@ bool SGSR1FeatureVk::EvaluateInternal(VkCommandBuffer InCmdBuffer, NVSDK_NGX_Par
                  static_cast<int>(output.Format), IsHdr());
     }
 
-    const SGSR1FrameInfo frame { renderWidth,  renderHeight,  color.Width, color.Height,
-                                 output.Width, output.Height, IsHdr() };
+    unsigned int outputWidth = 0;
+    unsigned int outputHeight = 0;
+    GetOutputExtent(output.Width, output.Height, &outputWidth, &outputHeight);
+
+    const SGSR1FrameInfo frame { renderWidth, renderHeight, color.Width, color.Height,
+                                 outputWidth, outputHeight, IsHdr() };
     const auto constants = BuildSGSR1Constants(InParameters, frame);
 
     const auto result = _pass->Dispatch(InCmdBuffer, color.ImageView, output.ImageView, constants);

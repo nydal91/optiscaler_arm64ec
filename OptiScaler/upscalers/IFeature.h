@@ -89,6 +89,8 @@ class IFeature
     unsigned int _renderHeight = 0;
     unsigned int _targetWidth = 0;
     unsigned int _targetHeight = 0;
+    unsigned int _lastOutputTextureWidth = 0;
+    unsigned int _lastOutputTextureHeight = 0;
     unsigned int _displayWidth = 0;
     unsigned int _displayHeight = 0;
 
@@ -104,6 +106,8 @@ class IFeature
     bool SetInitParameters(NVSDK_NGX_Parameter* InParameters);
     void GetRenderResolution(const NVSDK_NGX_Parameter* InParameters, unsigned int* OutWidth, unsigned int* OutHeight);
     void GetDynamicOutputResolution(NVSDK_NGX_Parameter* InParameters, unsigned int* width, unsigned int* height);
+    void GetOutputExtent(unsigned int textureWidth, unsigned int textureHeight, unsigned int* width,
+                         unsigned int* height);
     float GetSharpness(const NVSDK_NGX_Parameter* InParameters);
 
     virtual void SetInit(bool InValue) { _isInited = InValue; }

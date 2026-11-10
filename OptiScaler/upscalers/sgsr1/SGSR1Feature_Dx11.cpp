@@ -165,8 +165,12 @@ bool SGSR1FeatureDx11::EvaluateInternal(ID3D11DeviceContext* InContext, NVSDK_NG
         return false;
     }
 
-    const SGSR1FrameInfo frame { renderWidth,      renderHeight,      colorDesc.Width, colorDesc.Height,
-                                 outputDesc.Width, outputDesc.Height, IsHdr() };
+    unsigned int outputWidth = 0;
+    unsigned int outputHeight = 0;
+    GetOutputExtent(outputDesc.Width, outputDesc.Height, &outputWidth, &outputHeight);
+
+    const SGSR1FrameInfo frame { renderWidth, renderHeight, colorDesc.Width, colorDesc.Height,
+                                 outputWidth, outputHeight, IsHdr() };
     const auto constants = BuildSGSR1Constants(InParameters, frame);
 
     D3D11_SHADER_RESOURCE_VIEW_DESC colorSrvDesc {};
@@ -218,8 +222,8 @@ bool SGSR1FeatureDx11::EvaluateInternal(ID3D11DeviceContext* InContext, NVSDK_NG
     InContext->CSSetSamplers(0, 1, samplers);
     InContext->CSSetShaderResources(0, 1, srvs);
     InContext->CSSetUnorderedAccessViews(0, 1, uavs, nullptr);
-    InContext->Dispatch((outputDesc.Width + SGSR1ThreadGroupSize - 1) / SGSR1ThreadGroupSize,
-                        (outputDesc.Height + SGSR1ThreadGroupSize - 1) / SGSR1ThreadGroupSize, 1);
+    InContext->Dispatch((outputWidth + SGSR1ThreadGroupSize - 1) / SGSR1ThreadGroupSize,
+                        (outputHeight + SGSR1ThreadGroupSize - 1) / SGSR1ThreadGroupSize, 1);
 
     ID3D11ShaderResourceView* const nullSrvs[1] = {};
     ID3D11UnorderedAccessView* const nullUavs[1] = {};
