@@ -108,8 +108,14 @@ bool SGSR1FeatureDx12::EvaluateInternal(ID3D12GraphicsCommandList* InCommandList
     unsigned int outputHeight = 0;
     GetOutputExtent(static_cast<unsigned int>(outputDesc.Width), outputDesc.Height, &outputWidth, &outputHeight);
 
-    const SGSR1FrameInfo frame { renderWidth,  renderHeight, static_cast<uint32_t>(colorDesc.Width),
-                                 colorDesc.Height, outputWidth,  outputHeight, IsHdr() };
+    SGSR1FrameInfo frame {};
+    frame.renderWidth = renderWidth;
+    frame.renderHeight = renderHeight;
+    frame.inputWidth = static_cast<uint32_t>(colorDesc.Width);
+    frame.inputHeight = colorDesc.Height;
+    frame.displayWidth = outputWidth;
+    frame.displayHeight = outputHeight;
+    frame.hdr = IsHdr();
     const auto constants = BuildSGSR1Constants(InParameters, frame);
 
     const bool isUnreal = state.NVNGX_Engine == NVSDK_NGX_ENGINE_TYPE_UNREAL ||
